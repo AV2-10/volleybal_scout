@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volleybal Scout - Met S1 Receptiewissel & Servicewissel</title>
+<style>
+  *{box-sizing:border-box}
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #0e1527;
+    color: #17202a;
+  }
+
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  header {
+    background: #17202a;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: 16px; margin: 0; }
+
+  .guest-team-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: white;
+  }
+
+  .guest-team-wrap input {
+    padding: 4px 8px;
+    font-size: 12px;
+    width: 140px;
+    border-radius: 4px;
+    border: 1px solid #475569;
+    background: #243140;
+    color: white;
+  }
+
+  .scoreboard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #243140;
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+  .team-score {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .score-btn {
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 1;
+    border: none;
+    border-radius: 4px;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+  }
+  .score-btn.sub { background: #475569; }
+  .pts-display {
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+  }
+  .sets-display {
+    font-size: 13px;
+    color: #f59e0b;
+    font-weight: bold;
+  }
+
+  .toolbar {
+    background: white;
+    border-radius: 8px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 6px #0001;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  button, select, input {
+    font: inherit;
+    border: 1px solid #ccd3da;
+    border-radius: 6px;
+    padding: 4px 8px;
+    background: white;
+    font-size: 12px;
+  }
+  button { cursor: pointer; font-weight: 600; }
+  .danger { background: #fee2e2; border-color: #fecaca; }
+  .primary { background: #2563eb; color: white; border-color: #2563eb; }
+  .save-btn { background: #10b981; color: white; border-color: #059669; }
+  .home-btn { background: #f59e0b; color: white; border-color: #d97706; }
+  .switch-btn { background: #059669; color: white; border-color: #047857; }
+  .sub-btn { background: #8b5cf6; color: white; border-color: #7c3aed; }
+  .progression-btn { background: #0284c7; color: white; border-color: #0369a1; }
+
+  .court-wrap {
+    background: #1e293c;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 6px #0001;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    position: relative;
+  }
+
+  canvas {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    background: #1e293c;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .score-popup {
+    position: absolute;
+    display: none;
+    background: #17202a;
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    gap: 4px;
+    z-index: 50;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
+    flex-wrap: wrap;
+  }
+  .score-popup button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 4px;
+  }
+  .score-popup button:hover { background: #1d4ed8; }
+  .score-popup button.cancel { background: #64748b; }
+
+  .court-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #5f6b76;
+    flex-shrink: 0;
+  }
+  .legend { display: flex; gap: 6px; }
+  .pill { padding: 2px 6px; border-radius: 99px; background: #eef2f6; }
+
+  .bottom-panels {
+    height: 110px;
+    flex-shrink: 0;
+  }
+
+  .panel {
+    background: #1e293c;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 2px 6px #0001;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .stats-table-wrap {
+    overflow-y: auto;
+    flex: 1;
+    margin-top: 4px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th, td { padding: 4px; border-bottom: 1px solid #e7eaed; text-align: center; }
+  th { background: #f7f8f9; position: sticky; top: 0; }
+
+  .side-drawer {
+    position: fixed;
+    top: 50px;
+    bottom: 8px;
+    width: 290px;
+    background: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    transition: transform 0.25s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+  }
+
+  .side-drawer.left { left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; transform: translateX(-100%); }
+  .side-drawer.right { right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; transform: translateX(100%); }
+  .side-drawer.left.open { transform: translateX(0); }
+  .side-drawer.right.open { transform: translateX(0); }
+
+  .drawer-tab {
+    position: absolute;
+    top: 10px;
+    background: #17202a;
+    color: white;
+    border: none;
+    padding: 8px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .side-drawer.left .drawer-tab { right: -36px; border-radius: 0 6px 6px 0; }
+  .side-drawer.right .drawer-tab { left: -36px; border-radius: 6px 0 0 6px; }
+
+  .drawer-header { background: #17202a; color: white; padding: 8px 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .drawer-body { padding: 8px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
+  
+  .input-row { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0; }
+  .input-fields-inline { display: flex; gap: 4px; }
+
+  .roster-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
+  
+  .roster-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    background: #f8fafc; 
+    border: 1px solid #e2e8f0; 
+    padding: 6px 8px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    cursor: grab;
+    user-select: none;
+  }
+  .roster-item:active { cursor: grabbing; opacity: 0.6; }
+  
+  .pos-section { border-top: 1px solid #e2e8f0; padding-top: 8px; }
+  .pos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 6px; }
+  .pos-grid select { width: 100%; font-size: 11px; padding: 2px; }
+  .pos-grid .special-row { grid-column: span 3; margin-top: 4px; padding-top: 4px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  .pos-grid .special-row select { width: 60%; }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 750px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+  .modal-header {
+    background: #17202a;
+    color: white;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .winner-banner {
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    color: #166534;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .team-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .team-stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .team-stat-card h4 { margin: 0 0 8px 0; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; font-size: 13px; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+  .modal-footer {
+    padding: 10px 16px;
+    background: #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid #e2e8f0;
+  }
+  .sub-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+  }
+  .sub-form-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sub-form-row label {
+    width: 120px;
+    font-weight: bold;
+  }
+  .sub-form-row select {
+    flex: 1;
+  }
+
+  .timeline {
+    position: relative;
+    width: 100%;
+    margin: 10px auto;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: #cbd5e1;
+    transform: translateX(-50%);
+  }
+  .timeline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .timeline-side {
+    width: 42%;
+  }
+  .timeline-side.left { text-align: right; }
+  .timeline-side.right { text-align: left; }
+  .timeline-node {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .timeline-node.team-a { background-color: #2563eb; }
+  .timeline-node.team-b { background-color: #dc2626; }
+  .timeline-score-tag {
+    font-weight: bold;
+    font-size: 0.9rem;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid #cbd5e1;
+  }
+</style>
+</head>
+<body>
+
+<!-- Substitution Modal -->
+<div class="modal-overlay" id="subModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <span>🔄 Wissel (Substitution)</span>
+      <button onclick="closeSubModal()" style="background:none;border:none;color:white;font-size:18px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sub-form">
+        <div class="sub-form-row">
+          <label>Team:</label>
+          <select id="subTeamSel" onchange="updateSubDropdowns()">
+            <option value="A">Team A</option>
+            <option value="B">Team B</option>
+          </select>
+        </div>
+        <div class="sub-form-row">
+          <label>Veldspeler (UIT):</label>
+          <select id="subOutSel"></select>
+        </div>
+        <div class="sub-form-row">
+          <label>Bankspeler (IN):</label>
+          <select id="subInSel"></select>
+        </div>
+        <div style="font-size:11px; color:#64748b; margin-top:4px;">
+          Huidige Stand: <strong id="subScorePreview">A: 0 - B: 0</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="executeSubstitution()" class="sub-btn">Wissel Doorvoeren</button>
+      <button onclick="closeSubModal()" class="home-btn">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<!-- Score Progression Modal -->
+<div class="modal-overlay" id="progressionModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <span>📊 Score Verloop</span>
+      <button onclick="closeProgressionModal()" style="background:none;border:none;color:white;font-size:18px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; padding: 0 10px; font-size: 14px;">
+        <span style="color: #2563eb;">Team A</span>
+        <span style="color: #dc2626;">Team B</span>
+      </div>
+      <div id="progressionTimeline" class="timeline"></div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeProgressionModal()" class="home-btn">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- End Game Modal -->
+<div class="modal-overlay" id="endGameModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>🏆 Wedstrijd Afgelopen - Eindstatistieken</span>
+      <button onclick="closeModal()" style="background:none;border:none;color:white;font-size:18px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="winner-banner" id="winnerBanner">Team A Wint de Wedstrijd!</div>
+      
+      <h3>Teamprestaties</h3>
+      <div class="team-stats-grid" id="teamStatsSummary"></div>
+
+      <h3>Spelersstatistieken</h3>
+      <div style="overflow-x:auto;">
+        <table id="playerStatsTable">
+          <thead>
+            <tr>
+              <th>Speler</th>
+              <th>Aanval (++/+)</th>
+              <th>Aanval-eff.</th>
+              <th>Receptie (++/+)</th>
+              <th>Pass-eff.</th>
+              <th>Opslag (++/+)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="exportReportJSON()" class="primary">📥 Exporteer Rapport (JSON)</button>
+      <button onclick="closeModal()" class="home-btn">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- Left Drawer (Team A) -->
+<div class="side-drawer left" id="drawerA">
+  <button class="drawer-tab" onclick="toggleDrawer('drawerA')">◀ Team A</button>
+  <div class="drawer-header">
+    <span id="titleDrawerA">Team A</span>
+    <button onclick="toggleDrawer('drawerA')" style="background:none;border:none;color:white;font-size:16px;">✕</button>
+  </div>
+  <div class="drawer-body">
+    <strong>Spelersinvoer</strong>
+    <div style="font-size:10px; color:#64748b; margin-top:-6px;">💡 Naam is optioneel. Sleep spelers naar het veld.</div>
+    <div class="input-row">
+      <div class="input-fields-inline">
+        <input id="nrA" placeholder="Nr.*" style="width:55px" onkeydown="handleEnter(event, 'A')">
+        <input id="nameA" placeholder="Naam (optioneel)" style="flex:1" onkeydown="handleEnter(event, 'A')">
+      </div>
+      <div class="input-fields-inline">
+        <select id="roleA" style="flex:1">
+          <option value="">-- Geen positie --</option>
+          <option value="S">Spelverdeler (S)</option>
+          <option value="MB">Midden (MB)</option>
+          <option value="OH">Buiten (OH)</option>
+          <option value="OPP">Diagonaal (OPP)</option>
+          <option value="L">Libero (L)</option>
+        </select>
+        <button onclick="addPlayerToSide('A')" class="primary">+</button>
+      </div>
+    </div>
+    <div id="listA" class="roster-list"></div>
+
+    <div class="pos-section">
+      <strong>Startposities Team A</strong>
+      <div class="pos-grid">
+        <div>P1 <select class="posSelA" data-pos="1" onchange="syncSelectToPositions('A')"></select></div>
+        <div>P2 <select class="posSelA" data-pos="2" onchange="syncSelectToPositions('A')"></select></div>
+        <div>P3 <select class="posSelA" data-pos="3" onchange="syncSelectToPositions('A')"></select></div>
+        <div>P4 <select class="posSelA" data-pos="4" onchange="syncSelectToPositions('A')"></select></div>
+        <div>P5 <select class="posSelA" data-pos="5" onchange="syncSelectToPositions('A')"></select></div>
+        <div>P6 <select class="posSelA" data-pos="6" onchange="syncSelectToPositions('A')"></select></div>
+        <div class="special-row"><span>Actieve Libero (L)</span> <select class="posSelA" data-pos="L" onchange="syncSelectToPositions('A')"></select></div>
+        <div class="special-row"><span>Spelverdeler (S)</span> <select class="posSelA" data-pos="S" onchange="syncSelectToPositions('A')"></select></div>
+      </div>
+      <button onclick="applyPositions('A')" class="primary" style="margin-top:8px;width:100%">Posities A Toepassen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Right Drawer (Team B) -->
+<div class="side-drawer right" id="drawerB">
+  <button class="drawer-tab" onclick="toggleDrawer('drawerB')">Team B ▶</button>
+  <div class="drawer-header">
+    <span id="titleDrawerB">Team B</span>
+    <button onclick="toggleDrawer('drawerB')" style="background:none;border:none;color:white;font-size:16px;">✕</button>
+  </div>
+  <div class="drawer-body">
+    <strong>Spelersinvoer</strong>
+    <div style="font-size:10px; color:#64748b; margin-top:-6px;">💡 Naam is optioneel. Sleep spelers naar het veld.</div>
+    <div class="input-row">
+      <div class="input-fields-inline">
+        <input id="nrB" placeholder="Nr.*" style="width:55px" onkeydown="handleEnter(event, 'B')">
+        <input id="nameB" placeholder="Naam (optioneel)" style="flex:1" onkeydown="handleEnter(event, 'B')">
+      </div>
+      <div class="input-fields-inline">
+        <select id="roleB" style="flex:1">
+          <option value="">-- Geen positie --</option>
+          <option value="S">Spelverdeler (S)</option>
+          <option value="MB">Midden (MB)</option>
+          <option value="OH">Buiten (OH)</option>
+          <option value="OPP">Diagonaal (OPP)</option>
+          <option value="L">Libero (L)</option>
+        </select>
+        <button onclick="addPlayerToSide('B')" class="primary">+</button>
+      </div>
+    </div>
+    <div id="listB" class="roster-list"></div>
+
+    <div class="pos-section">
+      <strong>Startposities Team B</strong>
+      <div class="pos-grid">
+        <div>P1 <select class="posSelB" data-pos="1" onchange="syncSelectToPositions('B')"></select></div>
+        <div>P2 <select class="posSelB" data-pos="2" onchange="syncSelectToPositions('B')"></select></div>
+        <div>P3 <select class="posSelB" data-pos="3" onchange="syncSelectToPositions('B')"></select></div>
+        <div>P4 <select class="posSelB" data-pos="4" onchange="syncSelectToPositions('B')"></select></div>
+        <div>P5 <select class="posSelB" data-pos="5" onchange="syncSelectToPositions('B')"></select></div>
+        <div>P6 <select class="posSelB" data-pos="6" onchange="syncSelectToPositions('B')"></select></div>
+        <div class="special-row"><span>Actieve Libero (L)</span> <select class="posSelB" data-pos="L" onchange="syncSelectToPositions('B')"></select></div>
+        <div class="special-row"><span>Spelverdeler (S)</span> <select class="posSelB" data-pos="S" onchange="syncSelectToPositions('B')"></select></div>
+      </div>
+      <button onclick="applyPositions('B')" class="primary" style="margin-top:8px;width:100%">Posities B Toepassen</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-container">
+  <header>
+    <h1>🏐 Volleybal Scout</h1>
+
+    <div class="guest-team-wrap">
+      <label for="guestTeamInput">Gastteam:</label>
+      <input type="text" id="guestTeamInput" placeholder="Naam gastteam...">
+    </div>
+
+    <button onclick="saveMatchDataManual()" class="save-btn">💾 Opslaan</button>
+
+    <!-- Hidden file input -->
+    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importMatchData(event)">
+
+    <!-- Import Button -->
+    <button onclick="document.getElementById('importFileInput').click()" class="primary">📂 Importeer JSON</button>
+
+    <button id="toggleHomeBtn" class="home-btn" onclick="toggleHomeTeam()">🏠 Thuisteam: Team A</button>
+
+    <button id="firstServeBtn" onclick="toggleFirstServer()" style="padding: 6px 10px; font-weight: bold; background-color: #0284c7; color: white; border: 1px solid #0369a1; border-radius: 6px; cursor: pointer;">
+      🏐 Eerste opslag: Team A
+    </button>
+
+    <div class="scoreboard">
+      <div class="team-score">
+        <span style="font-size:12px;font-weight:bold;">A:</span>
+        <button class="score-btn sub" onclick="changePoints('A', -1)">-</button>
+        <span id="ptsA" class="pts-display">0</span>
+        <button class="score-btn" onclick="changePoints('A', 1)">+</button>
+      </div>
+
+      <div class="sets-display">
+        ( Sets: <span id="setsA">0</span> - <span id="setsB">0</span> )
+      </div>
+
+      <div class="team-score">
+        <button class="score-btn" onclick="changePoints('B', 1)">+</button>
+        <span id="ptsB" class="pts-display">0</span>
+        <button class="score-btn sub" onclick="changePoints('B', -1)">-</button>
+        <span style="font-size:12px;font-weight:bold;">:B</span>
+      </div>
+    </div>
+
+    <button id="clearBtn" class="danger">Wis alle acties</button>
+  </header>
+
+  <div class="toolbar">
+    <label>Actieve speler: <select id="player"></select></label>
+    <button class="sub-btn" onclick="openSubModal()">🔄 Wissel</button>
+    <button id="undoBtn">↶ Ongedaan</button>
+    <button class="progression-btn" onclick="openProgressionModal()">📊 Score Verloop</button>
+    <button class="switch-btn" onclick="switchSides()">🔄 Wissel van Kant</button>
+    <button onclick="showEndGameStats()" class="primary" style="margin-left:auto;">📊 Bekijk Match Stats</button>
+  </div>
+
+  <div class="court-wrap" id="courtContainer">
+    <canvas id="court" width="800" height="420"></canvas>
+    
+    <div id="scorePopup" class="score-popup"></div>
+
+    <div class="court-info">
+      <span id="hint">Klik op een speler om een actie (Receptie / Aanval / Opslag) toe te voegen.</span>
+      <div class="legend">
+        <span class="pill">● receptie</span>
+        <span class="pill">➜ aanval</span>
+        <span class="pill">➜ opslag</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-panels">
+    <div class="panel">
+      <strong>Statistieken</strong>
+      <div class="stats-table-wrap" id="stats"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('court'), ctx = canvas.getContext('2d');
+const scorePopup = document.getElementById('scorePopup');
+
+let activePlayer = null; 
+let pendingAction = null; 
+let attackTargetingStep = 0; 
+let serveTargetingStep = 0;  
+let actions = [];
+let players = [];
+let scoreHistory = []; 
+
+let homeTeamSide = localStorage.getItem('selectedHomeTeam') || 'A';
+let teamOnLeft = 'A'; 
+
+let pointsA = 0, pointsB = 0;
+let setsA = 0, setsB = 0;
+let lastPointWinner = null; 
+let servingSide = 'A';
+let isGameOver = false;
+
+let activeLiberoNumber = { 'A': null, 'B': null };
+let draggedPlayer = null;
+let hoveredDropZone = null;
+let firstAttackInRallyOccurred = false;
+let currentRallyEnded = false;
+let selectedPlayerFilter = null; 
+let showHistoricalLines = false; 
+
+const ROTATION_ORDER = [1, 6, 5, 4, 3, 2];
+
+function getNextPosition(currentPos) {
+  const idx = ROTATION_ORDER.indexOf(currentPos);
+  return ROTATION_ORDER[(idx + 1) % ROTATION_ORDER.length];
+}
+
+function getPositionCoordsBySide(posNum, courtSide, isReceiving, setterPos) {
+  const coordsLeftDefault = {
+    1: { xPct: 0.15, yPct: 0.75 }, 2: { xPct: 0.38, yPct: 0.75 }, 3: { xPct: 0.38, yPct: 0.50 },
+    4: { xPct: 0.38, yPct: 0.25 }, 5: { xPct: 0.15, yPct: 0.25 }, 6: { xPct: 0.15, yPct: 0.50 }
+  };
+  const coordsRightDefault = {
+    1: { xPct: 0.85, yPct: 0.25 }, 2: { xPct: 0.62, yPct: 0.25 }, 3: { xPct: 0.62, yPct: 0.50 },
+    4: { xPct: 0.62, yPct: 0.75 }, 5: { xPct: 0.85, yPct: 0.75 }, 6: { xPct: 0.85, yPct: 0.50 }
+  };
+
+  if (isReceiving && setterPos) {
+    if (courtSide === 'left') {
+      switch(setterPos) {
+        case 1:
+          return {
+            1: { xPct: 0.10, yPct: 0.80 }, 2: { xPct: 0.15, yPct: 0.75 }, 3: { xPct: 0.38, yPct: 0.50 },
+            4: { xPct: 0.38, yPct: 0.25 }, 5: { xPct: 0.17, yPct: 0.25 }, 6: { xPct: 0.15, yPct: 0.50 }
+          }[posNum];
+        case 6:
+          return {
+            1: { xPct: 0.15, yPct: 0.80 }, 2: { xPct: 0.38, yPct: 0.75 }, 3: { xPct: 0.48, yPct: 0.65 },
+            4: { xPct: 0.15, yPct: 0.20 }, 5: { xPct: 0.15, yPct: 0.50 }, 6: { xPct: 0.44, yPct: 0.65 }
+          }[posNum];
+        case 5:
+          return {
+            1: { xPct: 0.15, yPct: 0.80 }, 2: { xPct: 0.38, yPct: 0.80 }, 3: { xPct: 0.15, yPct: 0.25 },
+            4: { xPct: 0.38, yPct: 0.20 }, 5: { xPct: 0.30, yPct: 0.30 }, 6: { xPct: 0.15, yPct: 0.50 }
+          }[posNum];
+        case 4:
+          return {
+            1: { xPct: 0.07, yPct: 0.90 }, 2: { xPct: 0.15, yPct: 0.25 }, 3: { xPct: 0.40, yPct: 0.20 },
+            4: { xPct: 0.45, yPct: 0.20 }, 5: { xPct: 0.15, yPct: 0.50 }, 6: { xPct: 0.15, yPct: 0.80 }
+          }[posNum];
+        case 3:
+          return {
+            1: { xPct: 0.15, yPct: 0.80 }, 2: { xPct: 0.40, yPct: 0.75 }, 3: { xPct: 0.43, yPct: 0.50 },
+            4: { xPct: 0.15, yPct: 0.20 }, 5: { xPct: 0.15, yPct: 0.50 }, 6: { xPct: 0.07, yPct: 0.65 }
+          }[posNum];
+        case 2:
+          return {
+            1: { xPct: 0.15, yPct: 0.80 }, 2: { xPct: 0.44, yPct: 0.65 }, 3: { xPct: 0.15, yPct: 0.25 },
+            4: { xPct: 0.38, yPct: 0.20 }, 5: { xPct: 0.07, yPct: 0.45 }, 6: { xPct: 0.15, yPct: 0.50 }
+          }[posNum];
+      }
+    } else {
+      switch(setterPos) {
+        case 1:
+          return {
+            1: { xPct: 0.90, yPct: 0.20 }, 2: { xPct: 0.85, yPct: 0.25 }, 3: { xPct: 0.62, yPct: 0.50 },
+            4: { xPct: 0.62, yPct: 0.75 }, 5: { xPct: 0.83, yPct: 0.75 }, 6: { xPct: 0.85, yPct: 0.50 }
+          }[posNum];
+        case 6:
+          return {
+            1: { xPct: 0.85, yPct: 0.20 }, 2: { xPct: 0.62, yPct: 0.25 }, 3: { xPct: 0.52, yPct: 0.35 },
+            4: { xPct: 0.85, yPct: 0.80 }, 5: { xPct: 0.85, yPct: 0.50 }, 6: { xPct: 0.56, yPct: 0.35 }
+          }[posNum];
+        case 5:
+          return {
+            1: { xPct: 0.85, yPct: 0.20 }, 2: { xPct: 0.62, yPct: 0.20 }, 3: { xPct: 0.85, yPct: 0.75 },
+            4: { xPct: 0.62, yPct: 0.80 }, 5: { xPct: 0.70, yPct: 0.70 }, 6: { xPct: 0.85, yPct: 0.50 }
+          }[posNum];
+        case 4:
+          return {
+            1: { xPct: 0.93, yPct: 0.10 }, 2: { xPct: 0.85, yPct: 0.75 }, 3: { xPct: 0.60, yPct: 0.80 },
+            4: { xPct: 0.55, yPct: 0.80 }, 5: { xPct: 0.85, yPct: 0.50 }, 6: { xPct: 0.85, yPct: 0.20 }
+          }[posNum];
+        case 3:
+          return {
+            1: { xPct: 0.85, yPct: 0.20 }, 2: { xPct: 0.60, yPct: 0.25 }, 3: { xPct: 0.57, yPct: 0.50 },
+            4: { xPct: 0.85, yPct: 0.80 }, 5: { xPct: 0.85, yPct: 0.50 }, 6: { xPct: 0.93, yPct: 0.35 }
+          }[posNum];
+        case 2:
+          return {
+            1: { xPct: 0.85, yPct: 0.20 }, 2: { xPct: 0.56, yPct: 0.35 }, 3: { xPct: 0.85, yPct: 0.75 },
+            4: { xPct: 0.62, yPct: 0.80 }, 5: { xPct: 0.93, yPct: 0.55 }, 6: { xPct: 0.85, yPct: 0.50 }
+          }[posNum];
+      }
+    }
+  }
+
+  return courtSide === 'left' ? coordsLeftDefault[posNum] : coordsRightDefault[posNum];
+}
+
+function calculateRolesAndSwaps(side) {
+  const sidePlayers = players.filter(p => p.side === side && p.posNum !== null && p.posNum !== undefined);
+  const courtSide = (side === teamOnLeft) ? 'left' : 'right';
+
+  const isReceiving = (servingSide !== side);
+  const setterPlayer = sidePlayers.find(p => (p.isSetter || p.role === 'S'));
+  const setterPos = setterPlayer ? setterPlayer.posNum : null;
+
+  sidePlayers.forEach(p => {
+    p.onBench = false;
+    let targetPos = p.manualPos || p.posNum;
+
+    if (!isReceiving && !p.manualPos) {
+      const isFrontRow = [2, 3, 4].includes(p.posNum);
+      if (isFrontRow) {
+        if (p.role === 'OH') targetPos = 4;
+        else if (p.role === 'MB') targetPos = 3;
+        else if (p.role === 'OPP' || p.role === 'S' || p.isSetter) targetPos = 2;
+      }
+    }
+
+    p.displayPos = targetPos;
+    p.position = getPositionCoordsBySide(targetPos, courtSide, isReceiving, setterPos);
+  });
+
+  let activeLibero = null;
+  if (activeLiberoNumber[side]) {
+    activeLibero = players.find(p => p.side === side && p.isLibero && p.number === activeLiberoNumber[side]);
+  }
+  if (!activeLibero) {
+    activeLibero = players.find(p => p.side === side && p.isLibero);
+  }
+
+  players.filter(p => p.side === side && p.isLibero).forEach(l => {
+    if (l !== activeLibero) {
+      l.onBench = true;
+      l.posNum = null;
+    }
+  });
+
+  if (activeLibero) {
+    const allowedPositions = isReceiving ? [1, 5, 6] : [5, 6];
+    const mbBackRow = sidePlayers.find(p => p.role === 'MB' && allowedPositions.includes(p.posNum));
+    if (mbBackRow) {
+      activeLibero.posNum = mbBackRow.posNum;
+      activeLibero.displayPos = mbBackRow.displayPos || mbBackRow.posNum;
+      activeLibero.position = getPositionCoordsBySide(activeLibero.displayPos, courtSide, isReceiving, setterPos);
+      activeLibero.onBench = false;
+      mbBackRow.onBench = true;
+    } else {
+      activeLibero.onBench = true;
+    }
+  }
+}
+
+function updateAllTeamRolesAndSwaps() {
+  calculateRolesAndSwaps('A');
+  calculateRolesAndSwaps('B');
+}
+
+function rotateTeam(side) {
+  const sidePlayers = players.filter(p => p.side === side && p.posNum !== undefined && p.posNum !== null && !p.isLibero);
+  sidePlayers.forEach(p => {
+    p.posNum = getNextPosition(p.posNum);
+    delete p.manualPos;
+  });
+  updateAllTeamRolesAndSwaps();
+  updateDropdownsFromPositions(side);
+}
+
+function getSetterPosition(side) {
+  const setter = players.find(p => p.side === side && (p.isSetter || p.role === 'S'));
+  return setter ? setter.posNum : '?';
+}
+
+function saveMatchDataManual() {
+  const rawGuestName = document.getElementById('guestTeamInput').value.trim();
+  const guestTeamName = rawGuestName !== '' ? rawGuestName : 'Gastteam';
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
+
+  const sanitizedGuestName = guestTeamName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filename = `${sanitizedGuestName}_${dateStr}.json`;
+
+  const matchData = {
+    guestTeam: rawGuestName,
+    savedAt: today.toISOString(),
+    sets: { A: setsA, B: setsB },
+    points: { A: pointsA, B: pointsB },
+    actions: actions,
+    players: players,
+    scoreHistory: scoreHistory
+  };
+
+  const jsonString = JSON.stringify(matchData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const link = document.createElement('a');
+
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+
+function openSubModal() {
+  document.getElementById('subScorePreview').textContent = `Set ${setsA + setsB + 1} | A: ${pointsA} - B: ${pointsB}`;
+  updateSubDropdowns();
+  document.getElementById('subModal').style.display = 'flex';
+}
+
+function closeSubModal() {
+  document.getElementById('subModal').style.display = 'none';
+}
+
+function openProgressionModal() {
+  const container = document.getElementById('progressionTimeline');
+  container.innerHTML = '';
+
+  if (scoreHistory.length === 0) {
+    container.innerHTML = `<div style="text-align:center; color:#64748b; padding: 20px;">Nog geen punten gescoord in deze wedstrijd.</div>`;
+  } else {
+    scoreHistory.forEach(entry => {
+      const row = document.createElement('div');
+      row.className = 'timeline-row';
+
+      const isTeamA = entry.teamScored === 'A';
+      const nodeClass = isTeamA ? 'team-a' : 'team-b';
+      const currentScore = `Set ${entry.set}: ${entry.ptsA} - ${entry.ptsB}`;
+
+      row.innerHTML = `
+        <div class="timeline-side left">
+          ${isTeamA ? `<span class="timeline-score-tag">${currentScore}</span>` : ''}
+        </div>
+        <div class="timeline-node ${nodeClass}" title="Spelverdeler op Positie ${entry.setterPos} tijdens dit punt">
+          S${entry.setterPos}
+        </div>
+        <div class="timeline-side right">
+          ${!isTeamA ? `<span class="timeline-score-tag">${currentScore}</span>` : ''}
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  document.getElementById('progressionModal').style.display = 'flex';
+}
+
+function closeProgressionModal() {
+  document.getElementById('progressionModal').style.display = 'none';
+}
+
+function updateSubDropdowns() {
+  const side = document.getElementById('subTeamSel').value;
+  const sidePlayers = players.filter(p => p.side === side);
+  
+  const courtPlayers = sidePlayers.filter(p => p.posNum !== null && p.posNum !== undefined && !p.isLibero);
+  const benchPlayers = sidePlayers.filter(p => (p.posNum === null || p.posNum === undefined) && !p.isLibero);
+
+  const outSel = document.getElementById('subOutSel');
+  const inSel = document.getElementById('subInSel');
+
+  outSel.innerHTML = courtPlayers.map(p => `<option value="${p.number}">#${p.number} ${p.name} (P${p.posNum}${p.role ? ' - ' + p.role : ''})</option>`).join('');
+  inSel.innerHTML = benchPlayers.map(p => `<option value="${p.number}">#${p.number} ${p.name}</option>`).join('');
+
+  if (!courtPlayers.length) outSel.innerHTML = '<option value="">Geen veldspelers</option>';
+  if (!benchPlayers.length) inSel.innerHTML = '<option value="">Geen bankspelers</option>';
+}
+
+function executeSubstitution() {
+  const side = document.getElementById('subTeamSel').value;
+  const outNr = document.getElementById('subOutSel').value;
+  const inNr = document.getElementById('subInSel').value;
+
+  if (!outNr || !inNr) {
+    alert("Selecteer zowel een veldspeler als een bankspeler.");
+    return;
+  }
+
+  const playerOut = players.find(p => p.number === outNr && p.side === side);
+  const playerIn = players.find(p => p.number === inNr && p.side === side);
+
+  if (!playerOut || !playerIn) return;
+
+  playerIn.posNum = playerOut.posNum;
+  if (playerOut.manualPos) playerIn.manualPos = playerOut.manualPos;
+  playerIn.isSetter = playerOut.isSetter;
+  playerIn.role = playerOut.role;
+  playerIn.onBench = false;
+
+  playerOut.posNum = null;
+  delete playerOut.manualPos;
+  playerOut.isSetter = false;
+  playerOut.role = null;
+  playerOut.onBench = true;
+
+  const currentScoreStr = `Set ${setsA + setsB + 1} (${pointsA}-${pointsB})`;
+  
+  actions.push({
+    mode: 'substitution',
+    player: playerIn.number,
+    side: side,
+    playerOut: playerOut.number,
+    score: currentScoreStr,
+    time: new Date().toISOString()
+  });
+
+  updateAllTeamRolesAndSwaps();
+  updateDropdownsFromPositions(side);
+  populatePlayers();
+  drawCourt();
+  renderStats();
+  closeSubModal();
+}
+
+function getActionColor(quality) {
+  switch (quality) {
+    case '++':
+      return '#28a745'; // Green
+    case '+':
+      return '#ffc107'; // Yellow
+    case '0':
+      return '#fd7e14'; // Orange
+    case '-':
+      return '#dc3545'; // Red
+    default:
+      return '#ffffff'; // Fallback color (White)
+  }
+}
+
+
+function toggleFirstServer() {
+  if (pointsA === 0 && pointsB === 0 && setsA === 0 && setsB === 0) {
+    servingSide = (servingSide === 'A') ? 'B' : 'A';
+    lastPointWinner = null;
+    updateFirstServeUI();
+    updateAllTeamRolesAndSwaps();
+    drawCourt();
+  } else {
+    alert("Je kunt het beginnende team niet meer aanpassen als de wedstrijd al begonnen is.");
+  }
+}
+
+function updateFirstServeUI() {
+  const btn = document.getElementById('firstServeBtn');
+  if (btn) {
+    btn.textContent = `🏐 Eerste opslag: Team ${servingSide}`;
+    btn.style.backgroundColor = (servingSide === 'A') ? '#2563eb' : '#dc2626';
+    btn.style.borderColor = (servingSide === 'A') ? '#1d4ed8' : '#b91c1c';
+  }
+}
+
+function switchSides() {
+  teamOnLeft = (teamOnLeft === 'A') ? 'B' : 'A';
+  updateAllTeamRolesAndSwaps();
+  cancelPendingAction();
+  drawCourt();
+}
+
+function toggleHomeTeam() {
+  homeTeamSide = (homeTeamSide === 'A') ? 'B' : 'A';
+  localStorage.setItem('selectedHomeTeam', homeTeamSide);
+  updateHomeTeamUI();
+  saveSavedRoster();
+}
+
+function updateHomeTeamUI() {
+  const btn = document.getElementById('toggleHomeBtn');
+  btn.textContent = `🏠 Thuisteam: Team ${homeTeamSide}`;
+  document.getElementById('titleDrawerA').textContent = `Team A ${homeTeamSide === 'A' ? '(Thuisteam 🏠)' : '(Uitteam)'}`;
+  document.getElementById('titleDrawerB').textContent = `Team B ${homeTeamSide === 'B' ? '(Thuisteam 🏠)' : '(Uitteam)'}`;
+  drawCourt();
+}
+
+function loadSavedHomeTeam() {
+  const savedRoster = localStorage.getItem('myHomeTeamRoster');
+  if (savedRoster) {
+    try {
+      const parsedRoster = JSON.parse(savedRoster);
+      const loadedPlayers = parsedRoster.map(p => ({
+        number: p.number,
+        name: p.name || `Speler #${p.number}`,
+        side: homeTeamSide,
+        position: null,
+        posNum: null,
+        isLibero: p.isLibero || false,
+        isSetter: p.isSetter || false,
+        role: p.role || null,
+        onBench: false
+      }));
+      players = players.filter(p => p.side !== homeTeamSide).concat(loadedPlayers);
+    } catch(e) { console.error("Fout bij laden thuisteam roster", e); }
+  }
+}
+
+function saveSavedRoster() {
+  const homePlayers = players.filter(p => p.side === homeTeamSide).map(p => ({
+    number: p.number,
+    name: p.name,
+    role: p.role,
+    isLibero: p.isLibero,
+    isSetter: p.isSetter
+  }));
+  localStorage.setItem('myHomeTeamRoster', JSON.stringify(homePlayers));
+}
+
+function changePoints(side, delta) {
+  if (isGameOver) return;
+
+  firstAttackInRallyOccurred = false;
+  currentRallyEnded = true;
+
+  if (delta > 0) {
+    const currentSetterPos = getSetterPosition(side);
+    const previousWinner = lastPointWinner !== null ? lastPointWinner : servingSide;
+
+    if (previousWinner !== side) {
+      rotateTeam(side);
+    }
+
+    lastPointWinner = side;
+    servingSide = side;
+    updateAllTeamRolesAndSwaps();
+
+    if (side === 'A') pointsA++;
+    else if (side === 'B') pointsB++;
+
+    scoreHistory.push({
+      teamScored: side,
+      ptsA: pointsA,
+      ptsB: pointsB,
+      set: setsA + setsB + 1,
+      setterPos: currentSetterPos
+    });
+  } else {
+    if (side === 'A') pointsA = Math.max(0, pointsA - 1);
+    else if (side === 'B') pointsB = Math.max(0, pointsB - 1);
+
+    if (scoreHistory.length > 0) {
+      scoreHistory.pop();
+    }
+  }
+
+  if (pointsA >= 25 && pointsA - pointsB >= 2) {
+    setsA++; pointsA = 0; pointsB = 0; lastPointWinner = null;
+    if (setsA === 3) { isGameOver = true; showEndGameStats(); }
+    else switchSides();
+  } else if (pointsB >= 25 && pointsB - pointsA >= 2) {
+    setsB++; pointsA = 0; pointsB = 0; lastPointWinner = null;
+    if (setsB === 3) { isGameOver = true; showEndGameStats(); }
+    else switchSides();
+  }
+
+  updateScoreboard();
+  drawCourt();
+}
+
+function updateScoreboard() {
+  document.getElementById('ptsA').textContent = pointsA;
+  document.getElementById('ptsB').textContent = pointsB;
+  document.getElementById('setsA').textContent = setsA;
+  document.getElementById('setsB').textContent = setsB;
+}
+
+function checkAndAutoScore(act) {
+  if ((act.mode === 'attack' || act.mode === 'counterattack' || act.mode === 'serve') && act.score === '++') {
+    if (act.side) {
+      changePoints(act.side, 1);
+      act.autoScored = act.side;
+    }
+  }
+}
+
+function toggleDrawer(id) { document.getElementById(id).classList.toggle('open'); }
+
+function handleEnter(e, side) {
+  if (e.key === 'Enter') addPlayerToSide(side);
+}
+
+const playerSel = document.getElementById('player');
+
+function populatePlayers(){
+  playerSel.innerHTML = '<option value="">-- Toon alle acties --</option>' + players.map(p => {
+    let roleStr = '';
+    if (p.isLibero) roleStr += ' [L]';
+    if (p.isSetter) roleStr += ' [S]';
+    if (p.role) roleStr += ` [${p.role}]`;
+    const playerKey = `${p.number}_${p.side}`;
+    return `<option value="${playerKey}">#${p.number} — ${p.name} (Team ${p.side})${roleStr}</option>`;
+  }).join('');
+
+  playerSel.onchange = (e) => filterPlayerAttacks(e.target.value);
+  
+  ['A', 'B'].forEach(side => {
+    updateDropdownsFromPositions(side);
+  });
+
+  renderSideLists();
+  renderStats();
+}
+
+function filterPlayerAttacks(val) {
+  selectedPlayerFilter = val || null;
+  drawCourt();
+  renderStats();
+}
+
+function updateDropdownsFromPositions(side) {
+  const sidePlayers = players.filter(p => p.side === side);
+  const options = '<option value="">--</option>' + sidePlayers.map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
+  
+  document.querySelectorAll(`.posSel${side}`).forEach(sel => {
+    const pos = sel.dataset.pos;
+    
+    if (pos === 'L') {
+      const libOptions = '<option value="">-- Geen --</option>' + sidePlayers.filter(p => p.isLibero).map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
+      sel.innerHTML = libOptions;
+      
+      let currentLib = activeLiberoNumber[side];
+      if (!currentLib) {
+        const firstLib = sidePlayers.find(p => p.isLibero);
+        if (firstLib) currentLib = firstLib.number;
+      }
+      sel.value = currentLib || "";
+      return;
+    }
+
+    sel.innerHTML = options;
+    let matchingPlayer = null;
+
+    if (pos === 'S') matchingPlayer = sidePlayers.find(p => p.isSetter);
+    else matchingPlayer = sidePlayers.find(p => p.posNum === Number(pos));
+
+    sel.value = matchingPlayer ? matchingPlayer.number : "";
+  });
+}
+
+function addPlayerToSide(side) {
+  const nrInput = document.getElementById(side === 'A' ? 'nrA' : 'nrB');
+  const nameInput = document.getElementById(side === 'A' ? 'nameA' : 'nameB');
+  const roleInput = document.getElementById(side === 'A' ? 'roleA' : 'roleB');
+
+  const nr = nrInput.value.trim();
+  let nm = nameInput.value.trim();
+  const selectedRole = roleInput.value;
+
+  if (!nr) return alert("Rugnummer is verplicht.");
+
+  if (players.some(p => p.number === nr && p.side === side)) {
+    return alert(`Rugnummer #${nr} bestaat al in Team ${side}.`);
+  }
+
+  if (!nm) {
+    nm = `Speler #${nr}`;
+  }
+
+  const isLib = (selectedRole === 'L');
+  const isSet = (selectedRole === 'S');
+  const assignedRole = (selectedRole && !isLib && !isSet) ? selectedRole : (isSet ? 'S' : (isLib ? 'L' : null));
+
+  players.push({ 
+    number: nr, 
+    name: nm, 
+    side: side, 
+    position: null, 
+    posNum: null, 
+    isLibero: isLib, 
+    isSetter: isSet, 
+    role: assignedRole, 
+    onBench: false 
+  });
+
+  if (isLib && !activeLiberoNumber[side]) {
+    activeLiberoNumber[side] = nr;
+  }
+
+  nrInput.value = ""; 
+  nameInput.value = "";
+  roleInput.value = "";
+  nrInput.focus();
+
+  if (side === homeTeamSide) saveSavedRoster();
+  populatePlayers();
+}
+
+function renderSideLists() {
+  ['A', 'B'].forEach(side => {
+    const listEl = document.getElementById(`list${side}`);
+    const sidePlayers = players.filter(p => p.side === side);
+    listEl.innerHTML = sidePlayers.map((p) => {
+      const globalIdx = players.indexOf(p);
+      let badges = '';
+      if (p.isLibero) badges += '<span style="color:#38bdf8;font-weight:bold;margin-left:4px;">[L]</span>';
+      if (p.isSetter) badges += '<span style="color:#059669;font-weight:bold;margin-left:4px;">[S]</span>';
+      if (p.role && !p.isSetter && !p.isLibero) badges += `<span style="color:#6366f1;font-weight:bold;margin-left:4px;">[${p.role}]</span>`;
+      if (p.posNum) badges += `<span style="color:#64748b;font-weight:bold;margin-left:4px;">[P${p.posNum}]</span>`;
+
+      return `
+        <div class="roster-item" draggable="true" ondragstart="handleDragStart(event, ${globalIdx})">
+          <span><strong>#${p.number}</strong> ${p.name} ${badges}</span>
+          <button onclick="removeTeamPlayer(${globalIdx})" style="padding:1px 5px; border:none; background:#fee2e2; color:#dc2626; border-radius:4px; cursor:pointer;">×` + `</button>
+        </div>`;
+    }).join('') || '<div style="color:#94a3b8; font-size:11px; text-align:center;">Geen spelers</div>';
+  });
+}
+
+function removeTeamPlayer(i) {
+  const removedPlayer = players[i];
+  players.splice(i, 1);
+
+  if (removedPlayer && removedPlayer.isLibero && activeLiberoNumber[removedPlayer.side] === removedPlayer.number) {
+    const remainingLib = players.find(p => p.side === removedPlayer.side && p.isLibero);
+    activeLiberoNumber[removedPlayer.side] = remainingLib ? remainingLib.number : null;
+  }
+
+  if (removedPlayer && removedPlayer.side === homeTeamSide) saveSavedRoster();
+  populatePlayers();
+}
+
+function handleDragStart(e, globalIdx) {
+  draggedPlayer = players[globalIdx];
+  e.dataTransfer.setData('text/plain', globalIdx);
+}
+
+canvas.addEventListener('dragover', e => {
+  e.preventDefault();
+  if (!draggedPlayer) return;
+
+  const p = pos(e);
+  const targetSide = (p.x < canvas.width / 2) ? teamOnLeft : (teamOnLeft === 'A' ? 'B' : 'A');
+
+  if (draggedPlayer.side !== targetSide) {
+    hoveredDropZone = null;
+    drawCourt();
+    return;
+  }
+
+  const courtSide = (targetSide === teamOnLeft) ? 'left' : 'right';
+  let bestPos = null;
+  let minDist = Infinity;
+
+  for (let posNum = 1; posNum <= 6; posNum++) {
+    const coords = getPositionCoordsBySide(posNum, courtSide, false, false);
+    const px = coords.xPct * canvas.width;
+    const py = coords.yPct * canvas.height;
+    const dist = Math.hypot(px - p.x, py - p.y);
+
+    if (dist < minDist) {
+      minDist = dist;
+      bestPos = posNum;
+    }
+  }
+
+  if (minDist < 60) {
+    hoveredDropZone = { side: targetSide, posNum: bestPos };
+  } else {
+    hoveredDropZone = null;
+  }
+
+  drawCourt();
+});
+
+canvas.addEventListener('dragleave', e => {
+  hoveredDropZone = null;
+  drawCourt();
+});
+
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  if (draggedPlayer && hoveredDropZone) {
+    assignPlayerToPosition(draggedPlayer, hoveredDropZone.posNum, hoveredDropZone.side);
+  }
+  draggedPlayer = null;
+  hoveredDropZone = null;
+  drawCourt();
+});
+
+function assignPlayerToPosition(player, posNum, side) {
+  if (player.posNum === null || player.posNum === undefined) {
+    const existingPlayer = players.find(p => p.side === side && p.posNum === posNum);
+    if (existingPlayer) existingPlayer.posNum = null;
+    player.posNum = posNum;
+  } else {
+    player.manualPos = posNum;
+    const existingPlayer = players.find(p => p.side === side && p !== player && (p.displayPos === posNum || p.manualPos === posNum));
+    if (existingPlayer) {
+      existingPlayer.manualPos = player.displayPos || player.posNum;
+    }
+  }
+
+  updateAllTeamRolesAndSwaps();
+  updateDropdownsFromPositions(side);
+  populatePlayers();
+  drawCourt();
+}
+
+function syncSelectToPositions(side) {
+  players.filter(p => p.side === side).forEach(p => { 
+    p.posNum = null;
+    delete p.manualPos;
+    p.isSetter = (p.role === 'S');
+    p.onBench = false;
+  });
+
+  document.querySelectorAll(`.posSel${side}`).forEach(sel => {
+    const rawPos = sel.dataset.pos;
+    const selectedNr = sel.value;
+    if (!selectedNr) return;
+
+    const player = players.find(p => p.number === selectedNr && p.side === side);
+    if (!player) return;
+
+    if (rawPos === 'L') {
+      activeLiberoNumber[side] = selectedNr;
+    } else if (rawPos === 'S') {
+      player.isSetter = true;
+    } else {
+      player.posNum = Number(rawPos);
+    }
+  });
+
+  updateAllTeamRolesAndSwaps();
+  populatePlayers();
+  drawCourt();
+}
+
+function applyPositions(side) {
+  syncSelectToPositions(side);
+}
+
+function drawCourt(){
+  const w=canvas.width, h=canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#0184c7'; ctx.fillRect(0,0,w,h);
+  const x=30, y=25, cw=w-60, ch=h-50;
+
+  ctx.fillStyle='#f97316'; ctx.fillRect(x,y,cw,ch);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.strokeRect(x,y,cw,ch);
+
+  ctx.beginPath(); ctx.moveTo(x+cw/2,y); ctx.lineTo(x+cw/2,y+ch); ctx.stroke();
+  ctx.lineWidth=2; ctx.beginPath();
+  ctx.moveTo(x+cw*.25,y); ctx.lineTo(x+cw*.25,y+ch);
+  ctx.moveTo(x+cw*.75,y); ctx.lineTo(x+cw*.75,y+ch); ctx.stroke();
+
+  const teamOnRight = (teamOnLeft === 'A') ? 'B' : 'A';
+
+  ctx.fillStyle='#17202a'; ctx.font='bold 12px Arial';
+  ctx.fillText('NET', w/2-12, 16);
+  ctx.fillText(`KANT ${teamOnLeft} ${homeTeamSide === teamOnLeft ? '🏠' : ''}`, x + cw*0.20 - 25, y - 6);
+  ctx.fillText(`KANT ${teamOnRight} ${homeTeamSide === teamOnRight ? '🏠' : ''}`, x + cw*0.80 - 25, y - 6);
+
+  ['left', 'right'].forEach(courtSide => {
+    const currentSide = (courtSide === 'left') ? teamOnLeft : (teamOnLeft === 'A' ? 'B' : 'A');
+    const isReceiving = (servingSide !== currentSide);
+    const setterPlayer = players.find(p => p.side === currentSide && (p.isSetter || p.role === 'S'));
+    const setterPos = setterPlayer ? setterPlayer.posNum : null;
+
+    for (let posNum = 1; posNum <= 6; posNum++) {
+      const coords = getPositionCoordsBySide(posNum, courtSide, isReceiving, setterPos);
+      const px = coords.xPct * w;
+      const py = coords.yPct * h;
+
+      const isHovered = hoveredDropZone && hoveredDropZone.side === currentSide && hoveredDropZone.posNum === posNum;
+
+      ctx.beginPath();
+      ctx.arc(px, py, isHovered ? 20 : 16, 0, Math.PI * 2);
+      ctx.fillStyle = isHovered ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255, 255, 255, 0.15)';
+      ctx.fill();
+      ctx.strokeStyle = isHovered ? '#f59e0b' : 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = isHovered ? 2.5 : 1;
+      ctx.stroke();
+
+      if (!players.some(p => p.side === currentSide && (p.displayPos === posNum || (p.posNum === posNum && !p.displayPos)))) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`P${posNum}`, px, py);
+      }
+    }
+  });
+
+  for(const a of actions){
+    if (a.mode === 'substitution') continue;
+
+    const actionPlayerKey = `${a.player}_${a.side}`;
+
+    if (selectedPlayerFilter && actionPlayerKey !== selectedPlayerFilter) {
+      continue;
+    }
+
+    if (!selectedPlayerFilter && currentRallyEnded && !showHistoricalLines) {
+      continue;
+    }
+    
+    if(a.mode === 'attack' || a.mode === 'counterattack') {
+      ctx.strokeStyle = getActionColor(a.score);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth = 4; 
+      
+      const startX = a.x1 !== undefined ? a.x1 : a.x;
+      const startY = a.y1 !== undefined ? a.y1 : a.y;
+
+      ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(a.x2, a.y2); ctx.stroke();
+      
+      const ang = Math.atan2(a.y2 - startY, a.x2 - startX);
+      ctx.beginPath(); ctx.moveTo(a.x2, a.y2);
+      ctx.lineTo(a.x2 - 10 * Math.cos(ang - .5), a.y2 - 10 * Math.sin(ang - .5));
+      ctx.lineTo(a.x2 - 10 * Math.cos(ang + .5), a.y2 - 10 * Math.sin(ang + .5));
+      ctx.closePath(); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(startX, startY, 4, 0, Math.PI * 2); ctx.fill();
+    } else if (a.mode === 'serve' && a.x1 !== undefined && a.x2 !== undefined) {
+      ctx.strokeStyle = 'rgba(22, 163, 74, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(a.x1, a.y1); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = '#16a34a';
+      ctx.fillStyle = '#16a34a';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(a.x1, a.y1); ctx.lineTo(a.x2, a.y2); ctx.stroke();
+
+      const ang = Math.atan2(a.y2 - a.y1, a.x2 - a.x1);
+      ctx.beginPath(); ctx.moveTo(a.x2, a.y2);
+      ctx.lineTo(a.x2 - 10 * Math.cos(ang - .5), a.y2 - 10 * Math.sin(ang - .5));
+      ctx.lineTo(a.x2 - 10 * Math.cos(ang + .5), a.y2 - 10 * Math.sin(ang + .5));
+      ctx.closePath(); ctx.fill();
+
+      ctx.beginPath(); ctx.arc(a.x1, a.y1, 4, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = a.mode === 'serve' ? '#16a34a' : '#dc2626';
+      ctx.beginPath(); ctx.arc(a.x,a.y,7,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(a.player,a.x,a.y);
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    }
+  }
+
+  for (const p of players) {
+    if (!p.position || p.onBench) continue;
+    const px = p.position.xPct * canvas.width;
+    const py = p.position.yPct * canvas.height;
+
+    const playerKey = `${p.number}_${p.side}`;
+    const isFiltered = selectedPlayerFilter === playerKey;
+    const isSelected = activePlayer && activePlayer.number === p.number && activePlayer.side === p.side;
+    
+    const isServingPlayer = (p.side === servingSide && p.posNum === 1);
+
+    ctx.beginPath(); ctx.arc(px, py, 14, 0, Math.PI * 2);
+    
+    if (isSelected || isFiltered) {
+      ctx.fillStyle = "#ffffff";
+    } else if (p.isLibero) {
+      ctx.fillStyle = "#38bdf8";
+    } else {
+      ctx.fillStyle = p.side === 'B' ? "#dc2626" : "#2563eb"; 
+    }
+    ctx.fill();
+
+    if (isServingPlayer) {
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = "#10b981";
+      ctx.stroke();
+    } else if (isSelected || isFiltered) {
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#f59e0b";
+      ctx.stroke();
+    } else if (p.isLibero) {
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "#0284c7";
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = (isSelected || isFiltered) ? "#17202a" : "white"; 
+    ctx.font = "bold 11px Arial";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(p.number, px, py);
+
+    let badges = [];
+    if (p.isLibero) badges.push("L");
+    if (p.isSetter) badges.push("S");
+    if (p.role && !p.isSetter && !p.isLibero) badges.push(p.role);
+
+    if (badges.length > 0) {
+      ctx.font = "bold 10px Arial";
+      ctx.fillStyle = p.isSetter ? "#059669" : (p.isLibero ? "#0284c7" : "#475569");
+      ctx.fillText(badges.join(' '), px, py - 18);
+    }
+
+    if (isServingPlayer) {
+      ctx.font = "14px Arial";
+      ctx.fillText("🏐", px, py - 32);
+    }
+
+    ctx.font = "bold 10px Arial";
+    ctx.fillStyle = "#17202a";
+    ctx.fillText(p.name, px, py + 22);
+  }
+}
+
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  return {
+    x:(e.clientX-r.left)*canvas.width/r.width, 
+    y:(e.clientY-r.top)*canvas.height/r.height,
+    screenX: e.clientX - r.left,
+    screenY: e.clientY - r.top
+  };
+}
+
+function findClosestPlayer(x, y) {
+  let best = null, bestDist = Infinity;
+  for (const p of players) {
+    if (!p.position || p.onBench) continue;
+    const px = p.position.xPct * canvas.width, py = p.position.yPct * canvas.height;
+    const d = Math.hypot(px - x, py - y);
+    if (d < bestDist) { bestDist = d; best = p; }
+  }
+  return bestDist <= 25 ? best : null;
+}
+
+canvas.addEventListener('click', e => {
+  if (isGameOver) return;
+  const p = pos(e);
+
+  if (attackTargetingStep === 1 && pendingAction) {
+    pendingAction.x1 = p.x;
+    pendingAction.y1 = p.y;
+    attackTargetingStep = 2;
+    document.getElementById('hint').textContent = `Aanval voor #${pendingAction.player}: Klik nu op het EINDPUNT van de aanval (waar de bal landt op de helft van de tegenstander).`;
+    return;
+  }
+
+  if (attackTargetingStep === 2 && pendingAction) {
+    pendingAction.x2 = p.x;
+    pendingAction.y2 = p.y;
+    attackTargetingStep = 0;
+    showScoreSelectionStep(p.screenX, p.screenY);
+    return;
+  }
+
+  if (serveTargetingStep === 1 && pendingAction) {
+    pendingAction.x1 = p.x;
+    pendingAction.y1 = p.y;
+    serveTargetingStep = 2;
+    document.getElementById('hint').textContent = `Opslag voor #${pendingAction.player}: Klik nu op het EINDPUNT (waar de bal landt op de helft van de tegenstander).`;
+    return;
+  }
+
+  if (serveTargetingStep === 2 && pendingAction) {
+    pendingAction.x2 = p.x;
+    pendingAction.y2 = p.y;
+    serveTargetingStep = 0;
+    showScoreSelectionStep(p.screenX, p.screenY);
+    return;
+  }
+
+  const clickedPlayer = findClosestPlayer(p.x, p.y);
+  if (!clickedPlayer) return;
+
+  activePlayer = clickedPlayer;
+  drawCourt();
+
+  showSkillSelectionStep(p.screenX, p.screenY);
+});
+
+function showSkillSelectionStep(screenX, screenY) {
+  pendingAction = {
+    player: activePlayer.number,
+    side: activePlayer.side,
+    x: activePlayer.position.xPct * canvas.width,
+    y: activePlayer.position.yPct * canvas.height,
+    screenX: screenX,
+    screenY: screenY
+  };
+
+  scorePopup.innerHTML = `
+    <button onclick="selectSkill('reception')">Receptie</button>
+    <button onclick="selectSkill('attack')">Aanval</button>
+    <button onclick="selectSkill('serve')">Opslag</button>
+    <button class="cancel" onclick="cancelPendingAction()">✕</button>
+  `;
+
+  scorePopup.style.left = `${screenX}px`;
+  scorePopup.style.top = `${screenY}px`;
+  scorePopup.style.display = 'flex';
+}
+
+function selectSkill(mode) {
+  if (!pendingAction) return;
+  pendingAction.mode = mode;
+
+  if (mode === 'attack') {
+    attackTargetingStep = 1;
+    scorePopup.style.display = 'none';
+    document.getElementById('hint').textContent = `Aanval voor #${pendingAction.player} (Team ${pendingAction.side}): Klik op het STARTPUNT van de aanval (waar de aanvaller de bal slaat).`;
+  } else if (mode === 'serve') {
+    serveTargetingStep = 1;
+    scorePopup.style.display = 'none';
+    document.getElementById('hint').textContent = `Opslag voor #${pendingAction.player} (Team ${pendingAction.side}): Klik op het STARTPUNT van de opslag (waar de speler de bal slaat).`;
+  } else {
+    showScoreSelectionStep(pendingAction.screenX, pendingAction.screenY);
+  }
+}
+
+function showScoreSelectionStep(screenX, screenY) {
+  scorePopup.innerHTML = `
+    <button onclick="submitPendingScore('++')">++</button>
+    <button onclick="submitPendingScore('+')">+</button>
+    <button onclick="submitPendingScore('0')">0</button>
+    <button onclick="submitPendingScore('-')">-</button>
+    <button class="cancel" onclick="cancelPendingAction()">✕</button>
+  `;
+
+  scorePopup.style.left = `${screenX}px`;
+  scorePopup.style.top = `${screenY}px`;
+  scorePopup.style.display = 'flex';
+  document.getElementById('hint').textContent = `Selecteer de score voor ${pendingAction.mode}.`;
+}
+
+function submitPendingScore(scoreVal) {
+  if (!pendingAction) return;
+
+  if (currentRallyEnded) {
+    currentRallyEnded = false;
+  }
+
+  let actualMode = pendingAction.mode;
+  if (pendingAction.mode === 'attack') {
+    if (!firstAttackInRallyOccurred) {
+      actualMode = 'attack'; 
+      firstAttackInRallyOccurred = true;
+    } else {
+      actualMode = 'counterattack'; 
+    }
+  }
+
+  const newAction = {
+    ...pendingAction,
+    mode: actualMode,
+    score: scoreVal,
+    time: new Date().toISOString()
+  };
+
+  actions.push(newAction);
+  checkAndAutoScore(newAction);
+
+  cancelPendingAction();
+  drawCourt(); 
+  renderStats();
+}
+
+function cancelPendingAction() {
+  pendingAction = null;
+  activePlayer = null;
+  attackTargetingStep = 0;
+  serveTargetingStep = 0;
+  scorePopup.style.display = 'none';
+  document.getElementById('hint').textContent = "Klik op een speler om een actie (Receptie / Aanval / Opslag) toe te voegen.";
+  drawCourt();
+}
+
+document.getElementById('undoBtn').onclick = () => { 
+  cancelPendingAction();
+  const lastAction = actions.pop(); 
+  if (lastAction) {
+    if (lastAction.mode === 'attack') {
+      firstAttackInRallyOccurred = false;
+    }
+    
+    if (lastAction.autoScored) {
+      changePoints(lastAction.autoScored, -1);
+    } else if (lastAction.mode === 'substitution') {
+      const pIn = players.find(p => p.number === lastAction.player && p.side === lastAction.side);
+      const pOut = players.find(p => p.number === lastAction.playerOut && p.side === lastAction.side);
+      if (pIn && pOut) {
+        pOut.posNum = pIn.posNum;
+        if (pIn.manualPos) pOut.manualPos = pIn.manualPos;
+        pOut.isSetter = pIn.isSetter;
+        pOut.role = pIn.role;
+        pOut.onBench = false;
+
+        pIn.posNum = null;
+        delete pIn.manualPos;
+        pIn.isSetter = false;
+        pIn.role = null;
+        pIn.onBench = true;
+
+        updateAllTeamRolesAndSwaps();
+      }
+    }
+  }
+  isGameOver = false;
+  drawCourt(); 
+  renderStats(); 
+};
+
+document.getElementById('clearBtn').onclick = () => {
+  if(confirm(`Alle acties en scores wissen?`)){
+    cancelPendingAction();
+    actions=[]; pointsA=0; pointsB=0; setsA=0; setsB=0; lastPointWinner=null; servingSide='A'; isGameOver=false;
+    scoreHistory=[];
+    firstAttackInRallyOccurred = false;
+    currentRallyEnded = false;
+    selectedPlayerFilter = null;
+    showHistoricalLines = false;
+    teamOnLeft = 'A';
+    players = players.filter(p => p.side === homeTeamSide);
+    players.forEach(p => { p.position = null; p.posNum = null; delete p.manualPos; p.onBench = false; });
+    
+    populatePlayers();
+    updateScoreboard(); 
+    drawCourt(); 
+    renderStats();
+  }
+};
+
+function renderStats(){
+  const data = {};
+  players.forEach(p => {
+    const key = `${p.number}_${p.side}`;
+    data[key] = { 
+      playerNumber: p.number,
+      side: p.side,
+      reception:{'++':0,'+':0,'0':0,'-':0}, 
+      attack:{'++':0,'+':0,'0':0,'-':0}, 
+      counterattack:{'++':0,'+':0,'0':0,'-':0}, 
+      serve:{'++':0,'+':0,'0':0,'-':0} 
+    };
+  });
+
+  actions.forEach(a => {
+    if (a.mode === 'substitution') return;
+    const key = `${a.player}_${a.side}`;
+    if (!data[key]) {
+      data[key] = { 
+        playerNumber: a.player,
+        side: a.side,
+        reception:{'++':0,'+':0,'0':0,'-':0}, 
+        attack:{'++':0,'+':0,'0':0,'-':0}, 
+        counterattack:{'++':0,'+':0,'0':0,'-':0}, 
+        serve:{'++':0,'+':0,'0':0,'-':0} 
+      };
+    }
+    if (data[key][a.mode]) {
+      data[key][a.mode][a.score]++;
+    }
+  });
+
+  let html = '<table><tr><th>Speler</th><th>Actie</th><th>++ / Details</th><th>+</th><th>0</th><th>-</th></tr>';
+  
+  const subActions = actions.filter(a => a.mode === 'substitution');
+  if (subActions.length) {
+    subActions.forEach(sub => {
+      html += `<tr style="background:#f3e8ff;"><td>Team ${sub.side}</td><td>Wissel</td><td colspan="4"><strong>IN: #${sub.player}</strong> | UIT: #${sub.playerOut} (${sub.score})</td></tr>`;
+    });
+  }
+
+  const modeLabels = {
+    reception: 'Rec.',
+    attack: 'Aanval (1e)',
+    counterattack: 'Tegenaanval',
+    serve: 'Opslag'
+  };
+
+  for(const key of Object.keys(data)){
+    const item = data[key];
+    for(const m of ['reception','attack','counterattack','serve']){
+      const d = item[m];
+      const n = modeLabels[m];
+      if(d['++'] + d['+'] + d['0'] + d['-']){
+        const isSelectedRow = selectedPlayerFilter === key;
+        const rowStyle = isSelectedRow ? 'background-color:#fef3c7; font-weight:bold;' : '';
+        html += `<tr style="cursor:pointer; ${rowStyle}" onclick="filterPlayerAttacks('${key}')"><td>#${item.playerNumber} (${item.side}) 🔍</td><td>${n}</td><td>${d['++']}</td><td>${d['+']}</td><td>${d['0']}</td><td>${d['-']}</td></tr>`;
+      }
+    }
+  }
+  html += '</table>';
+  document.getElementById('stats').innerHTML = actions.length ? html : '<div style="color:#66737f;text-align:center;padding:8px;">Geen acties.</div>';
+}
+
+function showEndGameStats() {
+  const winnerText = setsA >= 3 ? "Team A Wint de Wedstrijd! 🎉" : setsB >= 3 ? "Team B Wint de Wedstrijd! 🎉" : "Wedstrijd Overzicht";
+  document.getElementById('winnerBanner').textContent = `${winnerText} (${setsA} - ${setsB})`;
+
+  const getTeamStats = (side) => {
+    const teamActions = actions.filter(a => a.side === side && a.mode !== 'substitution');
+    
+    let atkPts = 0, atkTotal = 0, atkErr = 0;
+    let cntPts = 0, cntTotal = 0, cntErr = 0;
+    let recGood = 0, recTotal = 0;
+    let srvAces = 0, srvTotal = 0;
+
+    teamActions.forEach(a => {
+      if (a.mode === 'attack') {
+        atkTotal++;
+        if (a.score === '++') atkPts++;
+        if (a.score === '-') atkErr++;
+      } else if (a.mode === 'counterattack') {
+        cntTotal++;
+        if (a.score === '++') cntPts++;
+        if (a.score === '-') cntErr++;
+      } else if (a.mode === 'reception') {
+        recTotal++;
+        if (a.score === '++' || a.score === '+') recGood++;
+      } else if (a.mode === 'serve') {
+        srvTotal++;
+        if (a.score === '++') srvAces++;
+      }
+    });
+
+    const atkEff = atkTotal ? (((atkPts - atkErr) / atkTotal) * 100).toFixed(0) + '%' : '0%';
+    const cntEff = cntTotal ? (((cntPts - cntErr) / cntTotal) * 100).toFixed(0) + '%' : '0%';
+    const recEff = recTotal ? ((recGood / recTotal) * 100).toFixed(0) + '%' : '0%';
+
+    return { atkPts, atkTotal, atkEff, cntPts, cntTotal, cntEff, recGood, recTotal, recEff, srvAces, srvTotal };
+  };
+
+  const statsA = getTeamStats('A');
+  const statsB = getTeamStats('B');
+
+  document.getElementById('teamStatsSummary').innerHTML = `
+    <div class="team-stat-card">
+      <h4>Team A</h4>
+      <div class="stat-row"><span>1e Aanval ptn (eff):</span> <strong>${statsA.atkPts}/${statsA.atkTotal} (${statsA.atkEff})</strong></div>
+      <div class="stat-row"><span>Tegenaanval ptn (eff):</span> <strong>${statsA.cntPts}/${statsA.cntTotal} (${statsA.cntEff})</strong></div>
+      <div class="stat-row"><span>Goede Recepties:</span> <strong>${statsA.recGood} / ${statsA.recTotal} (${statsA.recEff})</strong></div>
+      <div class="stat-row"><span>Aces:</span> <strong>${statsA.srvAces} / ${statsA.srvTotal}</strong></div>
+    </div>
+    <div class="team-stat-card">
+      <h4>Team B</h4>
+      <div class="stat-row"><span>1e Aanval ptn (eff):</span> <strong>${statsB.atkPts}/${statsB.atkTotal} (${statsB.atkEff})</strong></div>
+      <div class="stat-row"><span>Tegenaanval ptn (eff):</span> <strong>${statsB.cntPts}/${statsB.cntTotal} (${statsB.cntEff})</strong></div>
+      <div class="stat-row"><span>Goede Recepties:</span> <strong>${statsB.recGood} / ${statsB.recTotal} (${statsB.recEff})</strong></div>
+      <div class="stat-row"><span>Aces:</span> <strong>${statsB.srvAces} / ${statsB.srvTotal}</strong></div>
+    </div>
+  `;
+
+  const tbody = document.querySelector('#playerStatsTable tbody');
+  tbody.innerHTML = '';
+
+  players.forEach(p => {
+    const pActions = actions.filter(a => a.player === p.number && a.side === p.side && a.mode !== 'substitution');
+    if (!pActions.length) return;
+
+    let atkPts = 0, atkTotal = 0, atkErr = 0;
+    let cntPts = 0, cntTotal = 0, cntErr = 0;
+    let recGood = 0, recTotal = 0;
+    let srvAces = 0, srvTotal = 0;
+
+    pActions.forEach(a => {
+      if (a.mode === 'attack') {
+        atkTotal++;
+        if (a.score === '++') atkPts++;
+        if (a.score === '-') atkErr++;
+      } else if (a.mode === 'counterattack') {
+        cntTotal++;
+        if (a.score === '++') cntPts++;
+        if (a.score === '-') cntErr++;
+      } else if (a.mode === 'reception') {
+        recTotal++;
+        if (a.score === '++' || a.score === '+') recGood++;
+      } else if (a.mode === 'serve') {
+        srvTotal++;
+        if (a.score === '++') srvAces++;
+      }
+    });
+
+    const totAtk = atkTotal + cntTotal;
+    const totAtkPts = atkPts + cntPts;
+    const totAtkErr = atkErr + cntErr;
+    const combinedAtkEff = totAtk ? (((totAtkPts - totAtkErr) / totAtk) * 100).toFixed(0) + '%' : '-';
+    const recEff = recTotal ? ((recGood / recTotal) * 100).toFixed(0) + '%' : '-';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>#${p.number}</strong> ${p.name} (${p.side})</td>
+      <td>1e: ${atkPts}/${atkTotal} | Teg: ${cntPts}/${cntTotal}</td>
+      <td>${combinedAtkEff}</td>
+      <td>${recGood} / ${recTotal}</td>
+      <td>${recEff}</td>
+      <td>${srvAces} / ${srvTotal}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('endGameModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('endGameModal').style.display = 'none';
+}
+
+function exportReportJSON() {
+  saveMatchDataManual();
+}
+
+loadSavedHomeTeam();
+updateHomeTeamUI();
+populatePlayers();
+updateScoreboard();
+updateFirstServeUI();
+
+
+function importMatchData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    try {
+      const matchData = JSON.parse(e.target.result);
+
+      // 1. Restore match scores and settings
+      setsA = matchData.sets?.A || 0;
+      setsB = matchData.sets?.B || 0;
+      pointsA = matchData.points?.A || 0;
+      pointsB = matchData.points?.B || 0;
+
+      if (matchData.guestTeam !== undefined) {
+        document.getElementById('guestTeamInput').value = matchData.guestTeam;
+      }
+
+      // 2. Restore players, actions, and history
+      players = matchData.players || [];
+      actions = matchData.actions || [];
+      scoreHistory = matchData.scoreHistory || [];
+
+      // 3. Reset UI states
+      isGameOver = (setsA >= 3 || setsB >= 3);
+      cancelPendingAction();
+      
+      // 4. Update the visual layout
+      updateScoreboard();
+      updateAllTeamRolesAndSwaps();
+      populatePlayers();
+      drawCourt();
+      renderStats();
+
+      alert("Wedstrijdgegevens succesvol ingeladen!");
+    } catch (err) {
+      console.error(err);
+      alert("Fout bij het inladen van het JSON-bestand. Controleer of het bestand geldig is.");
+    }
+
+    // Clear file input value to allow re-uploading the same file if needed
+    event.target.value = '';
+  };
+
+  reader.readAsText(file);
+}
+</script>
+</body>
+</html>
