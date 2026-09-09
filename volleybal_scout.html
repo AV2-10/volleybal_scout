@@ -1,422 +1,537 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Volleybal Scout - Met S1 Receptiewissel & Servicewissel</title>
-<style>
-  *{box-sizing:border-box}
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    background: #0e1527;
-    color: #17202a;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volleybal Scout - Automatic Lineup</title>
+  <!-- SheetJS CDN for Excel Generation -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      background: #0e1527;
+      color: #17202a;
+    }
 
-  .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    padding: 8px;
-    gap: 8px;
-  }
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 8px;
+      gap: 8px;
+    }
 
-  header {
-    background: #17202a;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  h1 { font-size: 16px; margin: 0; }
+    header {
+      background: #17202a;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    h1 { font-size: 16px; margin: 0; }
 
-  .guest-team-wrap {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: white;
-  }
+    .guest-team-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: white;
+    }
 
-  .guest-team-wrap input {
-    padding: 4px 8px;
-    font-size: 12px;
-    width: 140px;
-    border-radius: 4px;
-    border: 1px solid #475569;
-    background: #243140;
-    color: white;
-  }
+    .guest-team-wrap select {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+      border: 1px solid #475569;
+      background: #243140;
+      color: white;
+    }
 
-  .scoreboard {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #243140;
-    padding: 4px 12px;
-    border-radius: 6px;
-  }
-  .team-score {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .score-btn {
-    padding: 2px 6px;
-    font-size: 11px;
-    line-height: 1;
-    border: none;
-    border-radius: 4px;
-    background: #3b82f6;
-    color: white;
-    cursor: pointer;
-  }
-  .score-btn.sub { background: #475569; }
-  .pts-display {
-    font-size: 16px;
-    font-weight: bold;
-    min-width: 20px;
-    text-align: center;
-  }
-  .sets-display {
-    font-size: 13px;
-    color: #f59e0b;
-    font-weight: bold;
-  }
+    .scoreboard {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #243140;
+      padding: 4px 12px;
+      border-radius: 6px;
+    }
+    .team-score {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .score-btn {
+      padding: 2px 6px;
+      font-size: 11px;
+      line-height: 1;
+      border: none;
+      border-radius: 4px;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+    }
+    .score-btn.sub { background: #475569; }
+    .pts-display {
+      font-size: 16px;
+      font-weight: bold;
+      min-width: 20px;
+      text-align: center;
+    }
+    .sets-display {
+      font-size: 13px;
+      color: #f59e0b;
+      font-weight: bold;
+    }
 
-  .toolbar {
-    background: white;
-    border-radius: 8px;
-    padding: 6px 10px;
-    box-shadow: 0 2px 6px #0001;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    font-size: 12px;
-    flex-shrink: 0;
-  }
+    .toolbar {
+      background: white;
+      border-radius: 8px;
+      padding: 6px 10px;
+      box-shadow: 0 2px 6px #0001;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
 
-  button, select, input {
-    font: inherit;
-    border: 1px solid #ccd3da;
-    border-radius: 6px;
-    padding: 4px 8px;
-    background: white;
-    font-size: 12px;
-  }
-  button { cursor: pointer; font-weight: 600; }
-  .danger { background: #fee2e2; border-color: #fecaca; }
-  .primary { background: #2563eb; color: white; border-color: #2563eb; }
-  .save-btn { background: #10b981; color: white; border-color: #059669; }
-  .home-btn { background: #f59e0b; color: white; border-color: #d97706; }
-  .switch-btn { background: #059669; color: white; border-color: #047857; }
-  .sub-btn { background: #8b5cf6; color: white; border-color: #7c3aed; }
-  .progression-btn { background: #0284c7; color: white; border-color: #0369a1; }
+    button, select, input {
+      font: inherit;
+      border: 1px solid #ccd3da;
+      border-radius: 6px;
+      padding: 4px 8px;
+      background: white;
+      font-size: 12px;
+    }
+    button { cursor: pointer; font-weight: 600; }
+    .danger { background: #fee2e2; border-color: #fecaca; }
+    .primary { background: #2563eb; color: white; border-color: #2563eb; }
+    .save-btn { background: #10b981; color: white; border-color: #059669; }
+    .home-btn { background: #f59e0b; color: white; border-color: #d97706; }
+    .switch-btn { background: #059669; color: white; border-color: #047857; }
+    .sub-btn { background: #8b5cf6; color: white; border-color: #7c3aed; }
+    .progression-btn { background: #0284c7; color: white; border-color: #0369a1; }
+    .excel-btn { background: #16a34a; color: white; border-color: #15803d; }
 
-  .court-wrap {
-    background: #1e293c;
-    border-radius: 8px;
-    padding: 8px;
-    box-shadow: 0 2px 6px #0001;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 0;
-    position: relative;
-  }
+    .court-wrap {
+      background: #1e293c;
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 2px 6px #0001;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      position: relative;
+    }
 
-  canvas {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    background: #1e293c;
-    border-radius: 6px;
-    cursor: pointer;
-  }
+    canvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      background: #1e293c;
+      border-radius: 6px;
+      cursor: pointer;
+    }
 
-  .score-popup {
-    position: absolute;
-    display: none;
-    background: #17202a;
-    border-radius: 8px;
-    padding: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    gap: 4px;
-    z-index: 50;
-    transform: translate(-50%, -100%);
-    margin-top: -10px;
-    flex-wrap: wrap;
-  }
-  .score-popup button {
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    font-weight: bold;
-    font-size: 12px;
-    border-radius: 4px;
-  }
-  .score-popup button:hover { background: #1d4ed8; }
-  .score-popup button.cancel { background: #64748b; }
+    .score-popup {
+      position: absolute;
+      display: none;
+      background: #17202a;
+      border-radius: 8px;
+      padding: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      gap: 4px;
+      z-index: 50;
+      transform: translate(-50%, -100%);
+      margin-top: -10px;
+      flex-wrap: wrap;
+    }
+    .score-popup button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-weight: bold;
+      font-size: 12px;
+      border-radius: 4px;
+    }
+    .score-popup button:hover { background: #1d4ed8; }
+    .score-popup button.cancel { background: #64748b; }
 
-  .court-info {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 4px;
-    font-size: 11px;
-    color: #5f6b76;
-    flex-shrink: 0;
-  }
-  .legend { display: flex; gap: 6px; }
-  .pill { padding: 2px 6px; border-radius: 99px; background: #eef2f6; }
+    .court-info {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #94a3b8;
+      flex-shrink: 0;
+    }
+    .legend { display: flex; gap: 6px; }
+    .pill { padding: 2px 6px; border-radius: 99px; background: #334155; color: white; }
 
-  .bottom-panels {
-    height: 110px;
-    flex-shrink: 0;
-  }
+    .bottom-panels {
+      height: 110px;
+      flex-shrink: 0;
+    }
 
-  .panel {
-    background: #1e293c;
-    border-radius: 8px;
-    padding: 8px;
-    box-shadow: 0 2px 6px #0001;
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-  }
+    .panel {
+      background: #1e293c;
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 2px 6px #0001;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      color: white;
+    }
 
-  .stats-table-wrap {
-    overflow-y: auto;
-    flex: 1;
-    margin-top: 4px;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  th, td { padding: 4px; border-bottom: 1px solid #e7eaed; text-align: center; }
-  th { background: #f7f8f9; position: sticky; top: 0; }
+    .stats-table-wrap {
+      overflow-y: auto;
+      flex: 1;
+      margin-top: 4px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; color: #17202a; background: white; }
+    th, td { padding: 4px; border-bottom: 1px solid #e7eaed; text-align: center; }
+    th { background: #f7f8f9; position: sticky; top: 0; }
 
-  .side-drawer {
-    position: fixed;
-    top: 50px;
-    bottom: 8px;
-    width: 290px;
-    background: white;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    z-index: 100;
-    transition: transform 0.25s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    border-radius: 8px;
-  }
+    .side-drawer {
+      position: fixed;
+      top: 50px;
+      bottom: 8px;
+      width: 290px;
+      background: white;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      transition: transform 0.25s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+    }
 
-  .side-drawer.left { left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; transform: translateX(-100%); }
-  .side-drawer.right { right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; transform: translateX(100%); }
-  .side-drawer.left.open { transform: translateX(0); }
-  .side-drawer.right.open { transform: translateX(0); }
+    .side-drawer.left { left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; transform: translateX(-100%); }
+    .side-drawer.right { right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; transform: translateX(100%); }
+    .side-drawer.left.open { transform: translateX(0); }
+    .side-drawer.right.open { transform: translateX(0); }
 
-  .drawer-tab {
-    position: absolute;
-    top: 10px;
-    background: #17202a;
-    color: white;
-    border: none;
-    padding: 8px 10px;
-    font-size: 11px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .side-drawer.left .drawer-tab { right: -36px; border-radius: 0 6px 6px 0; }
-  .side-drawer.right .drawer-tab { left: -36px; border-radius: 6px 0 0 6px; }
+    .drawer-tab {
+      position: absolute;
+      top: 10px;
+      background: #17202a;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .side-drawer.left .drawer-tab { right: -36px; border-radius: 0 6px 6px 0; }
+    .side-drawer.right .drawer-tab { left: -36px; border-radius: 6px 0 0 6px; }
 
-  .drawer-header { background: #17202a; color: white; padding: 8px 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
-  .drawer-body { padding: 8px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
-  
-  .input-row { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0; }
-  .input-fields-inline { display: flex; gap: 4px; }
+    .drawer-header { background: #17202a; color: white; padding: 8px 10px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+    .drawer-body { padding: 8px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
+    
+    .input-row { display: flex; flex-direction: column; gap: 4px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0; }
+    .input-fields-inline { display: flex; gap: 4px; }
 
-  .roster-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
-  
-  .roster-item { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    background: #f8fafc; 
-    border: 1px solid #e2e8f0; 
-    padding: 6px 8px; 
-    border-radius: 6px; 
-    font-size: 12px; 
-    cursor: grab;
-    user-select: none;
-  }
-  .roster-item:active { cursor: grabbing; opacity: 0.6; }
-  
-  .pos-section { border-top: 1px solid #e2e8f0; padding-top: 8px; }
-  .pos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 6px; }
-  .pos-grid select { width: 100%; font-size: 11px; padding: 2px; }
-  .pos-grid .special-row { grid-column: span 3; margin-top: 4px; padding-top: 4px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-  .pos-grid .special-row select { width: 60%; }
+    .roster-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
+    
+    .roster-item { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      background: #f8fafc; 
+      border: 1px solid #e2e8f0; 
+      padding: 6px 8px; 
+      border-radius: 6px; 
+      font-size: 12px; 
+      cursor: grab;
+      user-select: none;
+    }
+    .roster-item:active { cursor: grabbing; opacity: 0.6; }
+    
+    .pos-section { border-top: 1px solid #e2e8f0; padding-top: 8px; }
+    .auto-setup-box { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; background: #f1f5f9; padding: 8px; border-radius: 6px; }
+    .auto-setup-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+    .auto-setup-row select { width: 55%; }
 
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-  }
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 750px;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    overflow: hidden;
-  }
-  .modal-header {
-    background: #17202a;
-    color: white;
-    padding: 12px 16px;
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .modal-body {
-    padding: 16px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .winner-banner {
-    background: #dcfce7;
-    border: 1px solid #86efac;
-    color: #166534;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-  }
-  .team-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .team-stat-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px;
-  }
-  .team-stat-card h4 { margin: 0 0 8px 0; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; font-size: 13px; }
-  .stat-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
-  .modal-footer {
-    padding: 10px 16px;
-    background: #f1f5f9;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    border-top: 1px solid #e2e8f0;
-  }
-  .sub-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    background: #f8fafc;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-  }
-  .sub-form-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .sub-form-row label {
-    width: 120px;
-    font-weight: bold;
-  }
-  .sub-form-row select {
-    flex: 1;
-  }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 750px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .modal-header {
+      background: #17202a;
+      color: white;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .winner-banner {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .team-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .team-stat-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .team-stat-card h4 { margin: 0 0 8px 0; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; font-size: 13px; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+    .modal-footer {
+      padding: 10px 16px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .sub-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+    .sub-form-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sub-form-row label {
+      width: 120px;
+      font-weight: bold;
+    }
+    .sub-form-row select {
+      flex: 1;
+    }
 
-  .timeline {
-    position: relative;
-    width: 100%;
-    margin: 10px auto;
-  }
-  .timeline::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 2px;
-    background: #cbd5e1;
-    transform: translateX(-50%);
-  }
-  .timeline-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    position: relative;
-  }
-  .timeline-side {
-    width: 42%;
-  }
-  .timeline-side.left { text-align: right; }
-  .timeline-side.right { text-align: left; }
-  .timeline-node {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    color: white;
-    font-weight: bold;
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  }
-  .timeline-node.team-a { background-color: #2563eb; }
-  .timeline-node.team-b { background-color: #dc2626; }
-  .timeline-score-tag {
-    font-weight: bold;
-    font-size: 0.9rem;
-    background: #f1f5f9;
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: inline-block;
-    border: 1px solid #cbd5e1;
-  }
-</style>
+    .timeline {
+      position: relative;
+      width: 100%;
+      margin: 10px auto;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: #cbd5e1;
+      transform: translateX(-50%);
+    }
+    .timeline-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .timeline-side {
+      width: 42%;
+    }
+    .timeline-side.left { text-align: right; }
+    .timeline-side.right { text-align: left; }
+    .timeline-node {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: white;
+      font-weight: bold;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .timeline-node.team-a { background-color: #2563eb; }
+    .timeline-node.team-b { background-color: #dc2626; }
+    .timeline-score-tag {
+      font-weight: bold;
+      font-size: 0.9rem;
+      background: #f1f5f9;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      border: 1px solid #cbd5e1;
+    }
+    .set-start-modal-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .court-controls-layout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .side-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .side-rotate-btn {
+      background: #243140;
+      color: white;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 8px 6px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      transition: background 0.2s, transform 0.1s;
+      user-select: none;
+    }
+
+    .side-rotate-btn:hover { background: #334155; }
+    .side-rotate-btn:active { transform: scale(0.95); }
+
+    .side-rotate-btn span {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #cbd5e1;
+    }
+  </style>
 </head>
 <body>
+
+<!-- Competition Management Modal -->
+<div class="modal-overlay" id="competitionModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <span>🏆 Competitie Teams Beheren</span>
+      <button onclick="closeCompetitionModal()" style="background:none;border:none;color:white;font-size:18px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="newTeamNameInput" placeholder="Nieuwe teamnaam..." style="flex:1;">
+        <button onclick="addNewCompetitionTeam()" class="primary">+ Team Toevoegen</button>
+      </div>
+      <hr style="width:100%; border:0; border-top:1px solid #cbd5e1; margin:8px 0;">
+      <div id="competitionTeamsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeCompetitionModal()" class="save-btn">Klaar</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Set Positions Modal -->
+<div class="modal-overlay" id="setStartModal">
+  <div class="modal-content" style="max-width: 650px;">
+    <div class="modal-header">
+      <span id="setStartTitle">📋 Startposities Set</span>
+    </div>
+    <div class="modal-body set-start-modal-body">
+      <div class="pos-section" style="border:none; padding:0;">
+        <strong style="color:#2563eb;">Startposities Team A</strong>
+        <div class="auto-setup-box">
+          <div class="auto-setup-row">
+            <span>Spelverdeler (S):</span>
+            <select class="posSelA_modal" data-type="S"></select>
+          </div>
+          <div class="auto-setup-row">
+            <span>Libero (L):</span>
+            <select class="posSelA_modal" data-type="L"></select>
+          </div>
+        </div>
+      </div>
+      <div class="pos-section" style="border:none; padding:0;">
+        <strong style="color:#dc2626;">Startposities Team B</strong>
+        <div class="auto-setup-box">
+          <div class="auto-setup-row">
+            <span>Spelverdeler (S):</span>
+            <select class="posSelB_modal" data-type="S"></select>
+          </div>
+          <div class="auto-setup-row">
+            <span>Libero (L):</span>
+            <select class="posSelB_modal" data-type="L"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="confirmSetPositions()" class="save-btn">Start Set</button>
+    </div>
+  </div>
+</div>
 
 <!-- Substitution Modal -->
 <div class="modal-overlay" id="subModal">
@@ -505,7 +620,10 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button onclick="exportReportJSON()" class="primary">📥 Exporteer Rapport (JSON)</button>
+      <button onclick="exportSetToPDF(setsA + setsB + 1)" class="primary">Exporteer Huidige Set naar PDF</button>
+      <button onclick="exportMatchToPDF()">Export Match PDF</button>
+      <button onclick="exportMatchToExcel()">Export Match Excel</button>
+      <button onclick="downloadExcelWorkbook()" class="excel-btn">📊 Exporteer Excel (.xlsx)</button>
       <button onclick="closeModal()" class="home-btn">Sluiten</button>
     </div>
   </div>
@@ -520,39 +638,29 @@
   </div>
   <div class="drawer-body">
     <strong>Spelersinvoer</strong>
-    <div style="font-size:10px; color:#64748b; margin-top:-6px;">💡 Naam is optioneel. Sleep spelers naar het veld.</div>
+    <div style="font-size:10px; color:#64748b; margin-top:-6px;">💡 Voeg de spelers toe.</div>
     <div class="input-row">
       <div class="input-fields-inline">
         <input id="nrA" placeholder="Nr.*" style="width:55px" onkeydown="handleEnter(event, 'A')">
         <input id="nameA" placeholder="Naam (optioneel)" style="flex:1" onkeydown="handleEnter(event, 'A')">
-      </div>
-      <div class="input-fields-inline">
-        <select id="roleA" style="flex:1">
-          <option value="">-- Geen positie --</option>
-          <option value="S">Spelverdeler (S)</option>
-          <option value="MB">Midden (MB)</option>
-          <option value="OH">Buiten (OH)</option>
-          <option value="OPP">Diagonaal (OPP)</option>
-          <option value="L">Libero (L)</option>
-        </select>
         <button onclick="addPlayerToSide('A')" class="primary">+</button>
       </div>
     </div>
     <div id="listA" class="roster-list"></div>
 
     <div class="pos-section">
-      <strong>Startposities Team A</strong>
-      <div class="pos-grid">
-        <div>P1 <select class="posSelA" data-pos="1" onchange="syncSelectToPositions('A')"></select></div>
-        <div>P2 <select class="posSelA" data-pos="2" onchange="syncSelectToPositions('A')"></select></div>
-        <div>P3 <select class="posSelA" data-pos="3" onchange="syncSelectToPositions('A')"></select></div>
-        <div>P4 <select class="posSelA" data-pos="4" onchange="syncSelectToPositions('A')"></select></div>
-        <div>P5 <select class="posSelA" data-pos="5" onchange="syncSelectToPositions('A')"></select></div>
-        <div>P6 <select class="posSelA" data-pos="6" onchange="syncSelectToPositions('A')"></select></div>
-        <div class="special-row"><span>Actieve Libero (L)</span> <select class="posSelA" data-pos="L" onchange="syncSelectToPositions('A')"></select></div>
-        <div class="special-row"><span>Spelverdeler (S)</span> <select class="posSelA" data-pos="S" onchange="syncSelectToPositions('A')"></select></div>
+      <strong>Opstelling Team A</strong>
+      <div class="auto-setup-box">
+        <div class="auto-setup-row">
+          <span>Spelverdeler (S):</span>
+          <select class="posSelA" data-type="S"></select>
+        </div>
+        <div class="auto-setup-row">
+          <span>Libero (L):</span>
+          <select class="posSelA" data-type="L"></select>
+        </div>
       </div>
-      <button onclick="applyPositions('A')" class="primary" style="margin-top:8px;width:100%">Posities A Toepassen</button>
+      <button onclick="applyPositions('A')" class="primary" style="margin-top:8px;width:100%">Opstellen</button>
     </div>
   </div>
 </div>
@@ -566,39 +674,29 @@
   </div>
   <div class="drawer-body">
     <strong>Spelersinvoer</strong>
-    <div style="font-size:10px; color:#64748b; margin-top:-6px;">💡 Naam is optioneel. Sleep spelers naar het veld.</div>
+    <div style="font-size:10px; color:#64748b; margin-top:-6px;">💡 Voeg de spelers toe.</div>
     <div class="input-row">
       <div class="input-fields-inline">
         <input id="nrB" placeholder="Nr.*" style="width:55px" onkeydown="handleEnter(event, 'B')">
         <input id="nameB" placeholder="Naam (optioneel)" style="flex:1" onkeydown="handleEnter(event, 'B')">
-      </div>
-      <div class="input-fields-inline">
-        <select id="roleB" style="flex:1">
-          <option value="">-- Geen positie --</option>
-          <option value="S">Spelverdeler (S)</option>
-          <option value="MB">Midden (MB)</option>
-          <option value="OH">Buiten (OH)</option>
-          <option value="OPP">Diagonaal (OPP)</option>
-          <option value="L">Libero (L)</option>
-        </select>
         <button onclick="addPlayerToSide('B')" class="primary">+</button>
       </div>
     </div>
     <div id="listB" class="roster-list"></div>
 
     <div class="pos-section">
-      <strong>Startposities Team B</strong>
-      <div class="pos-grid">
-        <div>P1 <select class="posSelB" data-pos="1" onchange="syncSelectToPositions('B')"></select></div>
-        <div>P2 <select class="posSelB" data-pos="2" onchange="syncSelectToPositions('B')"></select></div>
-        <div>P3 <select class="posSelB" data-pos="3" onchange="syncSelectToPositions('B')"></select></div>
-        <div>P4 <select class="posSelB" data-pos="4" onchange="syncSelectToPositions('B')"></select></div>
-        <div>P5 <select class="posSelB" data-pos="5" onchange="syncSelectToPositions('B')"></select></div>
-        <div>P6 <select class="posSelB" data-pos="6" onchange="syncSelectToPositions('B')"></select></div>
-        <div class="special-row"><span>Actieve Libero (L)</span> <select class="posSelB" data-pos="L" onchange="syncSelectToPositions('B')"></select></div>
-        <div class="special-row"><span>Spelverdeler (S)</span> <select class="posSelB" data-pos="S" onchange="syncSelectToPositions('B')"></select></div>
+      <strong>Opstelling Team B</strong>
+      <div class="auto-setup-box">
+        <div class="auto-setup-row">
+          <span>Spelverdeler (S):</span>
+          <select class="posSelB" data-type="S"></select>
+        </div>
+        <div class="auto-setup-row">
+          <span>Libero (L):</span>
+          <select class="posSelB" data-type="L"></select>
+        </div>
       </div>
-      <button onclick="applyPositions('B')" class="primary" style="margin-top:8px;width:100%">Posities B Toepassen</button>
+      <button onclick="applyPositions('B')" class="primary" style="margin-top:8px;width:100%">Opstellen</button>
     </div>
   </div>
 </div>
@@ -608,17 +706,19 @@
     <h1>🏐 Volleybal Scout</h1>
 
     <div class="guest-team-wrap">
-      <label for="guestTeamInput">Gastteam:</label>
-      <input type="text" id="guestTeamInput" placeholder="Naam gastteam...">
+      <label for="opponentSelect">Tegenstander:</label>
+      <select id="opponentSelect" onchange="handleOpponentChange()"></select>
+      <button onclick="openCompetitionModal()" class="primary" style="padding:2px 6px;" title="Competitie teams beheren">⚙️</button>
     </div>
 
     <button onclick="saveMatchDataManual()" class="save-btn">💾 Opslaan</button>
 
-    <!-- Hidden file input -->
-    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importMatchData(event)">
+    <button onclick="document.getElementById('jsonFileInput').click()">Import JSON</button>
+    <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="importJSON(event)">
 
-    <!-- Import Button -->
-    <button onclick="document.getElementById('importFileInput').click()" class="primary">📂 Importeer JSON</button>
+    <button onclick="downloadExcelWorkbook()" class="excel-btn">📊 Excel (.xlsx)</button>
+
+  
 
     <button id="toggleHomeBtn" class="home-btn" onclick="toggleHomeTeam()">🏠 Thuisteam: Team A</button>
 
@@ -651,6 +751,9 @@
 
   <div class="toolbar">
     <label>Actieve speler: <select id="player"></select></label>
+    <label style="display:flex; align-items:center; gap:4px; font-weight:bold; cursor:pointer;">
+      <input type="checkbox" id="showHistLines" onchange="toggleHistoricalLines(this.checked)"> Toon Historische Lijnen
+    </label>
     <button class="sub-btn" onclick="openSubModal()">🔄 Wissel</button>
     <button id="undoBtn">↶ Ongedaan</button>
     <button class="progression-btn" onclick="openProgressionModal()">📊 Score Verloop</button>
@@ -659,16 +762,39 @@
   </div>
 
   <div class="court-wrap" id="courtContainer">
-    <canvas id="court" width="800" height="420"></canvas>
-    
+    <div class="court-controls-layout">
+      <!--Manual Rotate Left Side-->
+      <div class="side-controls">
+        <button class="side-rotate-btn" onclick="rotateTeam(teamOnLeft, 'forward')" title="Draai linkerteam vooruit">
+          ↻<br><span>Vooruit</span>
+        </button>
+        <button class="side-rotate-btn" onclick="rotateTeam(teamOnLeft, 'backward')" title="Draai linkerteam achteruit">
+          ↺<br><span>Achteruit</span>
+        </button>
+      </div>
+      
+      <canvas id="court" width="800" height="420"></canvas>
+      
+      <!--Manual Rotate Right Side-->
+      <div class="side-controls">
+        <button class="side-rotate-btn" onclick="rotateTeam(teamOnLeft === 'A' ? 'B' : 'A', 'forward')" title="Draai rechterteam vooruit">
+          ↻<br><span>Vooruit</span>
+        </button>
+        <button class="side-rotate-btn" onclick="rotateTeam(teamOnLeft === 'A' ? 'B' : 'A', 'backward')" title="Draai rechterteam achteruit">
+          ↺<br><span>Achteruit</span>
+        </button>
+      </div>
+    </div>
+
     <div id="scorePopup" class="score-popup"></div>
 
     <div class="court-info">
       <span id="hint">Klik op een speler om een actie (Receptie / Aanval / Opslag) toe te voegen.</span>
       <div class="legend">
-        <span class="pill">● receptie</span>
-        <span class="pill">➜ aanval</span>
-        <span class="pill">➜ opslag</span>
+        <span class="pill" style="border-left: 3px solid #28a745;">++ (Score/Ace)</span>
+        <span class="pill" style="border-left: 3px solid #ffc107;">+ (Positief)</span>
+        <span class="pill" style="border-left: 3px solid #fd7e14;">0 (Neutraal)</span>
+        <span class="pill" style="border-left: 3px solid #dc3545;">- (Fout)</span>
       </div>
     </div>
   </div>
@@ -687,8 +813,6 @@ const scorePopup = document.getElementById('scorePopup');
 
 let activePlayer = null; 
 let pendingAction = null; 
-let attackTargetingStep = 0; 
-let serveTargetingStep = 0;  
 let actions = [];
 let players = [];
 let scoreHistory = []; 
@@ -698,6 +822,7 @@ let teamOnLeft = 'A';
 
 let pointsA = 0, pointsB = 0;
 let setsA = 0, setsB = 0;
+let currentRallyId = 1;
 let lastPointWinner = null; 
 let servingSide = 'A';
 let isGameOver = false;
@@ -705,16 +830,706 @@ let isGameOver = false;
 let activeLiberoNumber = { 'A': null, 'B': null };
 let draggedPlayer = null;
 let hoveredDropZone = null;
+let receptionCompleted = false;
 let firstAttackInRallyOccurred = false;
 let currentRallyEnded = false;
 let selectedPlayerFilter = null; 
 let showHistoricalLines = false; 
+
+// Excel Workbook State
+let excelWorkbook = null;
+
+// New live drawing state variables
+let isDrawingLine = false;
+let currentLineStart = null;
+let currentLineEnd = null;
+
+// Competition Database State
+let competitionTeams = JSON.parse(localStorage.getItem('competitionTeams')) || [
+  { id: 'team-b', name: 'Team B', roster: [] },
+  { id: 'team-c', name: 'Team C', roster: [] },
+  { id: 'team-d', name: 'Team D', roster: [] }
+];
+let selectedOpponentId = localStorage.getItem('selectedOpponentId') || (competitionTeams[0] ? competitionTeams[0].id : '');
+
+function initExcelWorkbook() {
+  excelWorkbook = XLSX.utils.book_new();
+  const currentOpponent = competitionTeams.find(t => t.id === selectedOpponentId);
+  const guestName = currentOpponent ? currentOpponent.name : 'Gastteam';
+
+  const overviewData = [
+    ["Volleybal Scout Wedstrijd Rapport"],
+    ["Datum", new Date().toLocaleDateString('nl-NL')],
+    ["Thuisteam", `Team ${homeTeamSide}`],
+    ["Tegenstander", guestName],
+    [],
+    ["Selecties"],
+    ["Team", "Rugnummer", "Naam", "Rol"]
+  ];
+
+  players.forEach(p => {
+    let role = "Speler";
+    if (p.isSetter) role = "Spelverdeler";
+    else if (p.isLibero) role = "Libero";
+    else if (p.role) role = p.role;
+    overviewData.push([`Team ${p.side}`, p.number, p.name, role]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(overviewData);
+  XLSX.utils.book_append_sheet(excelWorkbook, ws, "Algemeen & Selecties");
+}
+
+function exportSetToExcel(setNumber) {
+  if (!excelWorkbook) initExcelWorkbook();
+
+  const setActions = actions.filter(a => a.set === setNumber);
+  
+  const setData = [
+    [`Statistieken Set ${setNumber}`],
+    [],
+    ["SPELERSSTATISTIEKEN"],
+    ["Speler", "Aanval (++/+) [Tot]", "Aanval-eff.", "Receptie (++/+) [Tot]", "Pass-eff.", "Opslag (++/+) [Tot]"]
+  ];
+
+  players.forEach(p => {
+    const pActions = setActions.filter(a => a.player === p.number && a.side === p.side && a.mode !== 'substitution');
+    if (pActions.length === 0) return;
+
+    let atkPlus = 0, atkPos = 0, atkTotal = 0, atkErr = 0;
+    let recPlus = 0, recPos = 0, recTotal = 0, recErr = 0;
+    let srvPlus = 0, srvPos = 0, srvTotal = 0;
+
+    pActions.forEach(a => {
+      if (a.mode === 'attack' || a.mode === 'counterattack') {
+        atkTotal++;
+        if (a.score === '++') atkPlus++;
+        if (a.score === '+') atkPos++;
+        if (a.score === '-') atkErr++;
+      } else if (a.mode === 'reception') {
+        recTotal++;
+        if (a.score === '++') recPlus++;
+        if (a.score === '+') recPos++;
+        if (a.score === '-') recErr++;
+      } else if (a.mode === 'serve') {
+        srvTotal++;
+        if (a.score === '++') srvPlus++;
+        if (a.score === '+') srvPos++;
+      }
+    });
+
+    const atkEff = atkTotal > 0 ? `${Math.round(((atkPlus - atkErr) / atkTotal) * 100)}%` : '-';
+    const passEff = recTotal > 0 ? `${Math.round(((recPlus + recPos - recErr) / recTotal) * 100)}%` : '-';
+
+    setData.push([
+      `#${p.number} ${p.name} (Team ${p.side})`,
+      `${atkPlus} / ${atkPos} (${atkTotal})`,
+      atkEff,
+      `${recPlus} / ${recPos} (${recTotal})`,
+      passEff,
+      `${srvPlus} / ${srvPos} (${srvTotal})`
+    ]);
+  });
+
+  setData.push([], [], ["GEDETAILLEERDE ACTIELOG"], ["Rally ID", "Team", "Speler", "Actie", "Score", "X-Coördinaat", "Y-Coördinaat"]);
+
+  setActions.forEach(a => {
+    setData.push([
+      a.rallyId || '-',
+      `Team ${a.side}`,
+      `#${a.player}`,
+      a.mode,
+      a.score,
+      a.x !== undefined ? a.x : '-',
+      a.y !== undefined ? a.y : '-'
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(setData);
+  XLSX.utils.book_append_sheet(excelWorkbook, ws, `Set ${setNumber}`);
+}
+
+function exportMatchToExcel() {
+  if (typeof XLSX === 'undefined') {
+    alert("SheetJS library is not loaded.");
+    return;
+  }
+
+  // 1. Build Aggregated Player Stats Sheet
+  const statsData = [
+    ["Speler", "Team", "Aanval ++", "Aanval +", "Aanval 0", "Aanval -", "Aanval Totaal", "Aanval Eff %",
+     "Receptie ++", "Receptie +", "Receptie 0", "Receptie -", "Receptie Totaal", "Pass Eff %",
+     "Opslag ++", "Opslag +", "Opslag 0", "Opslag -", "Opslag Totaal"]
+  ];
+
+  players.forEach(p => {
+    const pActions = actions.filter(a => a.player === p.number && a.side === p.side && a.mode !== 'substitution');
+    if (pActions.length === 0) return;
+
+    let atkPlus = 0, atkPos = 0, atkZero = 0, atkErr = 0, atkTotal = 0;
+    let recPlus = 0, recPos = 0, recZero = 0, recErr = 0, recTotal = 0;
+    let srvPlus = 0, srvPos = 0, srvZero = 0, srvErr = 0, srvTotal = 0;
+
+    pActions.forEach(a => {
+      if (a.mode === 'attack' || a.mode === 'counterattack') {
+        atkTotal++;
+        if (a.score === '++') atkPlus++;
+        if (a.score === '+') atkPos++;
+        if (a.score === '0') atkZero++;
+        if (a.score === '-') atkErr++;
+      } else if (a.mode === 'reception') {
+        recTotal++;
+        if (a.score === '++') recPlus++;
+        if (a.score === '+') recPos++;
+        if (a.score === '0') recZero++;
+        if (a.score === '-') recErr++;
+      } else if (a.mode === 'serve') {
+        srvTotal++;
+        if (a.score === '++') srvPlus++;
+        if (a.score === '+') srvPos++;
+        if (a.score === '0') srvZero++;
+        if (a.score === '-') srvErr++;
+      }
+    });
+
+    const atkEff = atkTotal > 0 ? Math.round(((atkPlus - atkErr) / atkTotal) * 100) / 100 : 0;
+    const passEff = recTotal > 0 ? Math.round(((recPlus + recPos - recErr) / recTotal) * 100) / 100 : 0;
+
+    statsData.push([
+      `#${p.number} ${p.name}`, p.side,
+      atkPlus, atkPos, atkZero, atkErr, atkTotal, atkEff,
+      recPlus, recPos, recZero, recErr, recTotal, passEff,
+      srvPlus, srvPos, srvZero, srvErr, srvTotal
+    ]);
+  });
+
+  // 2. Build Raw Action Log Sheet
+  const logData = [
+    ["Set", "Rally ID", "Team", "Speler", "Actie", "Score", "X", "Y"]
+  ];
+
+  actions.forEach(a => {
+    logData.push([
+      a.set || 1,
+      a.rallyId || '-',
+      `Team ${a.side}`,
+      `#${a.player}`,
+      a.mode,
+      a.score,
+      a.x !== undefined ? a.x : '-',
+      a.y !== undefined ? a.y : '-'
+    ]);
+  });
+
+  // Create Workbook with two worksheets
+  const wb = XLSX.utils.book_new();
+  const wsStats = XLSX.utils.aoa_to_sheet(statsData);
+  const wsLog = XLSX.utils.aoa_to_sheet(logData);
+
+  XLSX.utils.book_append_sheet(wb, wsStats, "Match Stats");
+  XLSX.utils.book_append_sheet(wb, wsLog, "Raw Action Log");
+
+  XLSX.writeFile(wb, "Wedstrijd_Matchstats.xlsx");
+}
+async function exportSetToPDF(setNumber) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const setActions = actions.filter(a => a.set === setNumber);
+
+  doc.setFontSize(16);
+  doc.text(`Wedstrijdrapport - Set ${setNumber}`, 14, 15);
+
+  const tableHeaders = [["Speler", "Aanval (++ / + / 0 / -) [Tot]", "Aanval-eff.", "Receptie (++ / + / 0 / -) [Tot]", "Pass-eff.", "Opslag (++ / + / 0 / -) [Tot]"]];
+  const tableRows = [];
+
+  players.forEach(p => {
+    const pActions = setActions.filter(a => a.player === p.number && a.side === p.side && a.mode !== 'substitution');
+    if (pActions.length === 0) return;
+
+    let atkPlus = 0, atkPos = 0, atkZero = 0, atkErr = 0, atkTotal = 0;
+    let recPlus = 0, recPos = 0, recZero = 0, recErr = 0, recTotal = 0;
+    let srvPlus = 0, srvPos = 0, srvZero = 0, srvErr = 0, srvTotal = 0;
+
+    pActions.forEach(a => {
+      if (a.mode === 'attack' || a.mode === 'counterattack') {
+        atkTotal++;
+        if (a.score === '++') atkPlus++;
+        if (a.score === '+') atkPos++;
+        if (a.score === '0') atkZero++;
+        if (a.score === '-') atkErr++;
+      } else if (a.mode === 'reception') {
+        recTotal++;
+        if (a.score === '++') recPlus++;
+        if (a.score === '+') recPos++;
+        if (a.score === '0') recZero++;
+        if (a.score === '-') recErr++;
+      } else if (a.mode === 'serve') {
+        srvTotal++;
+        if (a.score === '++') srvPlus++;
+        if (a.score === '+') srvPos++;
+        if (a.score === '0') srvZero++;
+        if (a.score === '-') srvErr++;
+      }
+    });
+
+    const atkEff = atkTotal > 0 ? `${Math.round(((atkPlus - atkErr) / atkTotal) * 100)}%` : '-';
+    const passEff = recTotal > 0 ? `${Math.round(((recPlus + recPos - recErr) / recTotal) * 100)}%` : '-';
+
+    tableRows.push([
+      `#${p.number} ${p.name} (${p.side})`,
+      `${atkPlus} / ${atkPos} / ${atkZero} / ${atkErr} (${atkTotal})`,
+      atkEff,
+      `${recPlus} / ${recPos} / ${recZero} / ${recErr} (${recTotal})`,
+      passEff,
+      `${srvPlus} / ${srvPos} / ${srvZero} / ${srvErr} (${srvTotal})`
+    ]);
+  });
+
+  doc.autoTable({
+    startY: 22,
+    head: tableHeaders,
+    body: tableRows,
+    theme: 'grid',
+    styles: { fontSize: 8 }
+  });
+
+  let currentY = doc.lastAutoTable.finalY + 10;
+  doc.setFontSize(12);
+  doc.text("Aanvals- en Opslaglijnen per Speler", 14, currentY);
+  currentY += 5;
+
+  for (const p of players) {
+    const playerActions = setActions.filter(a => a.player === p.number && a.side === p.side && (a.mode === 'attack' || a.mode === 'serve' || a.mode === 'counterattack'));
+    if (playerActions.length === 0) continue;
+
+    drawCourtForPlayer(p.number, p.side, setNumber);
+    const imgData = canvas.toDataURL('image/png');
+
+    if (currentY + 50 > 280) {
+      doc.addPage();
+      currentY = 15;
+    }
+
+    doc.setFontSize(9);
+    doc.text(`#${p.number} ${p.name}`, 14, currentY + 5);
+    doc.addImage(imgData, 'PNG', 50, currentY, 80, 45);
+    currentY += 50;
+  }
+
+  drawCourt();
+
+  if (currentY + 30 > 280) doc.addPage();
+  
+  const logHeaders = [["Rally", "Team", "Speler", "Actie", "Score", "X", "Y"]];
+  const logRows = setActions.map(a => [
+    a.rallyId || '-',
+    `Team ${a.side}`,
+    `#${a.player}`,
+    a.mode,
+    a.score,
+    a.x !== undefined ? a.x : '-',
+    a.y !== undefined ? a.y : '-'
+  ]);
+
+  doc.autoTable({
+    startY: currentY + 5,
+    head: logHeaders,
+    body: logRows,
+    theme: 'striped',
+    styles: { fontSize: 7 }
+  });
+
+  doc.save(`Wedstrijd_Set_${setNumber}.pdf`);
+}
+
+async function exportMatchToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p', 'mm', 'a4');
+
+  doc.setFontSize(16);
+  doc.text("Wedstrijdrapport - Totale Matchstats", 14, 15);
+
+  const tableHeaders = [["Speler", "Aanval (++ / + / 0 / -) [Tot]", "Aanval-eff.", "Receptie (++ / + / 0 / -) [Tot]", "Pass-eff.", "Opslag (++ / + / 0 / -) [Tot]"]];
+  const tableRows = [];
+
+  players.forEach(p => {
+    // Process all actions for this player across all sets
+    const pActions = actions.filter(a => a.player === p.number && a.side === p.side && a.mode !== 'substitution');
+    if (pActions.length === 0) return;
+
+    let atkPlus = 0, atkPos = 0, atkZero = 0, atkErr = 0, atkTotal = 0;
+    let recPlus = 0, recPos = 0, recZero = 0, recErr = 0, recTotal = 0;
+    let srvPlus = 0, srvPos = 0, srvZero = 0, srvErr = 0, srvTotal = 0;
+
+    pActions.forEach(a => {
+      if (a.mode === 'attack' || a.mode === 'counterattack') {
+        atkTotal++;
+        if (a.score === '++') atkPlus++;
+        if (a.score === '+') atkPos++;
+        if (a.score === '0') atkZero++;
+        if (a.score === '-') atkErr++;
+      } else if (a.mode === 'reception') {
+        recTotal++;
+        if (a.score === '++') recPlus++;
+        if (a.score === '+') recPos++;
+        if (a.score === '0') recZero++;
+        if (a.score === '-') recErr++;
+      } else if (a.mode === 'serve') {
+        srvTotal++;
+        if (a.score === '++') srvPlus++;
+        if (a.score === '+') srvPos++;
+        if (a.score === '0') srvZero++;
+        if (a.score === '-') srvErr++;
+      }
+    });
+
+    const atkEff = atkTotal > 0 ? `${Math.round(((atkPlus - atkErr) / atkTotal) * 100)}%` : '-';
+    const passEff = recTotal > 0 ? `${Math.round(((recPlus + recPos - recErr) / recTotal) * 100)}%` : '-';
+
+    tableRows.push([
+      `#${p.number} ${p.name} (${p.side})`,
+      `${atkPlus} / ${atkPos} / ${atkZero} / ${atkErr} (${atkTotal})`,
+      atkEff,
+      `${recPlus} / ${recPos} / ${recZero} / ${recErr} (${recTotal})`,
+      passEff,
+      `${srvPlus} / ${srvPos} / ${srvZero} / ${srvErr} (${srvTotal})`
+    ]);
+  });
+
+  doc.autoTable({
+    startY: 22,
+    head: tableHeaders,
+    body: tableRows,
+    theme: 'grid',
+    styles: { fontSize: 8 }
+  });
+
+
+  let currentY = doc.lastAutoTable.finalY + 10;
+  doc.setFontSize(12);
+  doc.text("Aanvals- en Opslaglijnen per Speler", 14, currentY);
+    currentY += 5;
+
+  for (const p of players) {
+    const playerActions = actions.filter(a => a.player === p.number && a.side === p.side && (a.mode === 'attack' || a.mode === 'serve' || a.mode === 'counterattack'));
+    if (playerActions.length === 0) continue;
+
+    drawCourtForPlayer(p.number, p.side); // Fixed: removed setNumber
+    const imgData = canvas.toDataURL('image/png');
+
+    if (currentY + 50 > 280) {
+      doc.addPage();
+      currentY = 15;
+    }
+
+    doc.setFontSize(9);
+    doc.text(`#${p.number} ${p.name}`, 14, currentY + 5);
+    doc.addImage(imgData, 'PNG', 50, currentY, 80, 45);
+    currentY += 50;
+  }
+
+  drawCourt();
+
+  if (currentY + 30 > 280) doc.addPage();
+  
+  const logHeaders = [["Rally", "Team", "Speler", "Actie", "Score", "X", "Y"]];
+  const logRows = actions.map(a => [
+    a.rallyId || '-',
+    `Team ${a.side}`,
+    `#${a.player}`,
+    a.mode,
+    a.score,
+    a.x !== undefined ? a.x : '-',
+    a.y !== undefined ? a.y : '-'
+  ]);
+
+  doc.autoTable({
+    startY: currentY + 5,
+    head: logHeaders,
+    body: logRows,
+    theme: 'striped',
+    styles: { fontSize: 7 }
+  });
+
+  doc.save("Wedstrijd_Totale_Matchstats.pdf");
+}
+
+function drawCourtForPlayer(playerNumber, side, setNumber) {
+  drawCourt(); 
+
+  const pActions = actions.filter(a => 
+    (setNumber === undefined || setNumber === null || a.set === setNumber) && 
+    a.player === playerNumber && 
+    a.side === side && 
+    (a.mode === 'attack' || a.mode === 'counterattack' || a.mode === 'serve')
+  );
+
+
+  pActions.forEach(a => {
+    const startX = a.x1 !== undefined ? a.x1 : a.x;
+    const startY = a.y1 !== undefined ? a.y1 : a.y;
+    const endX = a.x2 !== undefined ? a.x2 : a.x;
+    const endY = a.y2 !== undefined ? a.y2 : a.y;
+
+    if (startX !== undefined && startY !== undefined && endX !== undefined && endY !== undefined) {
+      ctx.strokeStyle = getActionColor(a.score);
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath(); 
+      ctx.moveTo(startX, startY); 
+      ctx.lineTo(endX, endY); 
+      ctx.stroke();
+
+      const ang = Math.atan2(endY - startY, endX - startX);
+      ctx.beginPath(); 
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - 10 * Math.cos(ang - 0.5), endY - 10 * Math.sin(ang - 0.5));
+      ctx.lineTo(endX - 10 * Math.cos(ang + 0.5), endY - 10 * Math.sin(ang + 0.5));
+      ctx.closePath(); 
+      ctx.fill();
+
+      ctx.beginPath(); 
+      ctx.arc(startX, startY, 4, 0, Math.PI * 2); 
+      ctx.fill();
+    }
+  });
+}
+
+function downloadExcelWorkbook() {
+  if (!excelWorkbook) initExcelWorkbook();
+  const currentOpponent = competitionTeams.find(t => t.id === selectedOpponentId);
+  const rawGuestName = currentOpponent ? currentOpponent.name : 'Gastteam';
+  const sanitizedGuestName = rawGuestName.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const dateStr = new Date().toISOString().split('T')[0];
+  
+  XLSX.writeFile(excelWorkbook, `VolleyScout_${sanitizedGuestName}_${dateStr}.xlsx`);
+}
+
+function saveCompetitionData() {
+  localStorage.setItem('competitionTeams', JSON.stringify(competitionTeams));
+  localStorage.setItem('selectedOpponentId', selectedOpponentId);
+}
+
+function initCompetitionUI() {
+  const selector = document.getElementById('opponentSelect');
+  selector.innerHTML = '';
+  
+  competitionTeams.forEach(team => {
+    const opt = document.createElement('option');
+    opt.value = team.id;
+    opt.textContent = team.name;
+    if (team.id === selectedOpponentId) opt.selected = true;
+    selector.appendChild(opt);
+  });
+
+  if (!selectedOpponentId && competitionTeams.length > 0) {
+    selectedOpponentId = competitionTeams[0].id;
+    selector.value = selectedOpponentId;
+  }
+}
+
+function handleOpponentChange() {
+  const selector = document.getElementById('opponentSelect');
+  selectedOpponentId = selector.value;
+  saveCompetitionData();
+
+  const currentOpponent = competitionTeams.find(t => t.id === selectedOpponentId);
+  const awaySide = homeTeamSide === 'A' ? 'B' : 'A';
+
+  if (currentOpponent && currentOpponent.roster && currentOpponent.roster.length > 0) {
+    const loadedPlayers = currentOpponent.roster.map(p => ({
+      number: p.number,
+      name: p.name || `Speler #${p.number}`,
+      side: awaySide,
+      position: null,
+      posNum: null,
+      isLibero: p.isLibero || false,
+      isSetter: p.isSetter || false,
+      role: p.role || null,
+      onBench: false
+    }));
+    players = players.filter(p => p.side !== awaySide).concat(loadedPlayers);
+  } else {
+    players = players.filter(p => p.side !== awaySide);
+  }
+
+  updateAllTeamRolesAndSwaps();
+  populatePlayers();
+  drawCourt();
+}
+
+function openCompetitionModal() {
+  renderCompetitionTeamsList();
+  document.getElementById('competitionModal').style.display = 'flex';
+}
+
+function closeCompetitionModal() {
+  document.getElementById('competitionModal').style.display = 'none';
+  initCompetitionUI();
+  handleOpponentChange();
+}
+
+function addNewCompetitionTeam() {
+  const input = document.getElementById('newTeamNameInput');
+  const name = input.value.trim();
+  if (!name) return;
+
+  const id = 'team-' + Date.now();
+  competitionTeams.push({ id: id, name: name, roster: [] });
+  if (!selectedOpponentId) selectedOpponentId = id;
+  
+  input.value = '';
+  saveCompetitionData();
+  renderCompetitionTeamsList();
+}
+
+function removeCompetitionTeam(id) {
+  competitionTeams = competitionTeams.filter(t => t.id !== id);
+  if (selectedOpponentId === id) {
+    selectedOpponentId = competitionTeams.length > 0 ? competitionTeams[0].id : '';
+  }
+  saveCompetitionData();
+  renderCompetitionTeamsList();
+}
+
+function renderCompetitionTeamsList() {
+  const container = document.getElementById('competitionTeamsList');
+  container.innerHTML = '';
+
+  if (competitionTeams.length === 0) {
+    container.innerHTML = '<div style="color:#64748b; font-size:12px;">Geen competitieteams toegevoegd.</div>';
+    return;
+  }
+
+  competitionTeams.forEach(team => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0;';
+    item.innerHTML = `
+      <span><strong>${team.name}</strong> (${team.roster ? team.roster.length : 0} spelers)</span>
+      <button onclick="removeCompetitionTeam('${team.id}')" class="danger" style="padding:2px 6px;">Verwijder</button>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function syncOpponentRosterFromCurrentMatch() {
+  const awaySide = homeTeamSide === 'A' ? 'B' : 'A';
+  const currentOpponent = competitionTeams.find(t => t.id === selectedOpponentId);
+  if (currentOpponent) {
+    currentOpponent.roster = players.filter(p => p.side === awaySide).map(p => ({
+      number: p.number,
+      name: p.name,
+      role: p.role,
+      isLibero: p.isLibero,
+      isSetter: p.isSetter
+    }));
+    saveCompetitionData();
+  }
+}
 
 const ROTATION_ORDER = [1, 6, 5, 4, 3, 2];
 
 function getNextPosition(currentPos) {
   const idx = ROTATION_ORDER.indexOf(currentPos);
   return ROTATION_ORDER[(idx + 1) % ROTATION_ORDER.length];
+}
+
+function getPreviousPosition(currentPos) {
+  const idx = ROTATION_ORDER.indexOf(currentPos);
+  return ROTATION_ORDER[(idx - 1 + ROTATION_ORDER.length) % ROTATION_ORDER.length];
+}
+
+function toggleHistoricalLines(checked) {
+  showHistoricalLines = checked;
+  drawCourt();
+}
+
+function resetFieldPositionsForSide(side) {
+  players.filter(p => p.side === side).forEach(p => {
+    p.posNum = null;
+    delete p.manualPos;
+    p.onBench = false;
+  });
+}
+
+function openSetStartModal() {
+  const currentSetNum = setsA + setsB + 1;
+  document.getElementById('setStartTitle').textContent = `📋 Startposities Set ${currentSetNum}`;
+  
+  ['A', 'B'].forEach(side => {
+    populateSetModalDropdowns(side);
+  });
+
+  document.getElementById('setStartModal').style.display = 'flex';
+}
+
+function populateSetModalDropdowns(side) {
+  const sidePlayers = players.filter(p => p.side === side);
+  
+  document.querySelectorAll(`.posSel${side}_modal`).forEach(sel => {
+    const type = sel.dataset.type;
+    if (type === 'S') {
+      const preferred = sidePlayers.filter(p => p.isSetter || p.role === 'S');
+      const others = sidePlayers.filter(p => !(p.isSetter || p.role === 'S'));
+      const ordered = [...preferred, ...others];
+      sel.innerHTML = '<option value="">-- Kies S --</option>' + ordered.map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
+      if (preferred.length > 0) sel.value = preferred[0].number;
+    } else if (type === 'L') {
+      const preferred = sidePlayers.filter(p => p.isLibero || p.role === 'L');
+      const others = sidePlayers.filter(p => !(p.isLibero || p.role === 'L'));
+      const ordered = [...preferred, ...others];
+      sel.innerHTML = '<option value="">-- Geen --</option>' + ordered.map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
+      if (preferred.length > 0) sel.value = preferred[0].number;
+    }
+  });
+}
+
+function assignSetterLibero(side, setterNr, liberoNr) {
+  const sidePlayers = players.filter(p => p.side === side);
+
+  sidePlayers.forEach(p => {
+    p.isSetter = false;
+    p.isLibero = false;
+    p.role = null;
+  });
+
+  if (setterNr) {
+    const setter = sidePlayers.find(p => p.number === setterNr);
+    if (setter) setter.isSetter = true;
+  }
+
+  if (liberoNr) {
+    activeLiberoNumber[side] = liberoNr;
+    const libero = sidePlayers.find(p => p.number === liberoNr);
+    if (libero) {
+      libero.isLibero = true;
+      libero.posNum = null;
+      delete libero.manualPos;
+      libero.onBench = true;
+    }
+  } else {
+    activeLiberoNumber[side] = null;
+  }
+}
+
+function confirmSetPositions() {
+  ['A', 'B'].forEach(side => {
+    let setterNr = null;
+    let liberoNr = null;
+
+    document.querySelectorAll(`.posSel${side}_modal`).forEach(sel => {
+      const type = sel.dataset.type;
+      if (type === 'S') setterNr = sel.value;
+      if (type === 'L') liberoNr = sel.value;
+    });
+
+    assignSetterLibero(side, setterNr, liberoNr);
+    updateDropdownsFromPositions(side);
+  });
+
+  document.getElementById('setStartModal').style.display = 'none';
+  populatePlayers();
+  drawCourt();
 }
 
 function getPositionCoordsBySide(posNum, courtSide, isReceiving, setterPos) {
@@ -801,29 +1616,41 @@ function getPositionCoordsBySide(posNum, courtSide, isReceiving, setterPos) {
 }
 
 function calculateRolesAndSwaps(side) {
-  const sidePlayers = players.filter(p => p.side === side && p.posNum !== null && p.posNum !== undefined);
   const courtSide = (side === teamOnLeft) ? 'left' : 'right';
-
+  const sidePlayers = players.filter(p => p.side === side && p.posNum !== undefined && p.posNum !== null);
+  
   const isReceiving = (servingSide !== side);
-  const setterPlayer = sidePlayers.find(p => (p.isSetter || p.role === 'S'));
-  const setterPos = setterPlayer ? setterPlayer.posNum : null;
+  const isInReceptionPhase = isReceiving && !receptionCompleted;
+
+  const setterPlayer = players.find(p => p.side === side && (p.isSetter || p.role === 'S'));
+  const setterPos = setterPlayer ? (setterPlayer.manualPos || setterPlayer.posNum) : null;
+  const setterIdx = (setterPos !== null && setterPos !== undefined) ? ROTATION_ORDER.indexOf(setterPos) : -1;
+
+  const roleByOffset = { 1: 'MB', 2: 'OH', 3: 'OPP', 4: 'MB', 5: 'OH' };
 
   sidePlayers.forEach(p => {
-    p.onBench = false;
     let targetPos = p.manualPos || p.posNum;
+    p.displayPos = targetPos;
+    p.position = getPositionCoordsBySide(targetPos, courtSide, isInReceptionPhase, setterPos);
+    p.onBench = false;
 
-    if (!isReceiving && !p.manualPos) {
-      const isFrontRow = [2, 3, 4].includes(p.posNum);
-      if (isFrontRow) {
-        if (p.role === 'OH') targetPos = 4;
-        else if (p.role === 'MB') targetPos = 3;
-        else if (p.role === 'OPP' || p.role === 'S' || p.isSetter) targetPos = 2;
+    if (p.isSetter || p === setterPlayer) {
+      p.role = 'S';
+    } else if (!p.isLibero && setterIdx !== -1) {
+      const idx = ROTATION_ORDER.indexOf(targetPos);
+      if (idx !== -1) {
+        const offset = (idx - setterIdx + ROTATION_ORDER.length) % ROTATION_ORDER.length;
+        if (roleByOffset[offset]) p.role = roleByOffset[offset];
       }
     }
-
-    p.displayPos = targetPos;
-    p.position = getPositionCoordsBySide(targetPos, courtSide, isReceiving, setterPos);
   });
+
+  const mbBackRowPositionMap = {
+    1: 6, 6: 5, 5: 1, 4: 6, 3: 5, 2: 1
+  };
+
+  const backRowMbPos = mbBackRowPositionMap[setterPos];
+  const mbMustServe = (backRowMbPos === 1 && servingSide === side);
 
   let activeLibero = null;
   if (activeLiberoNumber[side]) {
@@ -840,34 +1667,67 @@ function calculateRolesAndSwaps(side) {
     }
   });
 
-  if (activeLibero) {
-    const allowedPositions = isReceiving ? [1, 5, 6] : [5, 6];
-    const mbBackRow = sidePlayers.find(p => p.role === 'MB' && allowedPositions.includes(p.posNum));
-    if (mbBackRow) {
-      activeLibero.posNum = mbBackRow.posNum;
-      activeLibero.displayPos = mbBackRow.displayPos || mbBackRow.posNum;
-      activeLibero.position = getPositionCoordsBySide(activeLibero.displayPos, courtSide, isReceiving, setterPos);
+  if (activeLibero && backRowMbPos && !mbMustServe) {
+    const mbPlayerToReplace = sidePlayers.find(p => p.displayPos === backRowMbPos);
+
+    if (mbPlayerToReplace) {
+      activeLibero.posNum = backRowMbPos;
+      activeLibero.displayPos = backRowMbPos;
+      activeLibero.position = getPositionCoordsBySide(backRowMbPos, courtSide, isInReceptionPhase, setterPos);
       activeLibero.onBench = false;
-      mbBackRow.onBench = true;
-    } else {
-      activeLibero.onBench = true;
+      mbPlayerToReplace.onBench = true;
+    }
+  } else if (activeLibero) {
+    activeLibero.onBench = true;
+    activeLibero.posNum = null;
+    activeLibero.displayPos = null;
+  }
+
+  if (receptionCompleted) {
+    const receivingOHAtP2 = isReceiving && sidePlayers.some(p => !p.isLibero && p.role === 'OH' && p.displayPos === 2);
+    const receivingOppAtP4 = isReceiving && sidePlayers.some(p => !p.isLibero && p.role === 'OPP' && p.displayPos === 4);
+
+    sidePlayers.forEach(p => {
+      if (p.onBench || p.isLibero) return;
+
+      const currentPos = p.displayPos;
+      const isFrontRow = [2, 3, 4].includes(currentPos);
+
+      if (p.role === 'OH' && receivingOHAtP2 && currentPos === 2 && receivingOppAtP4) {
+        p.displayPos = 2;
+      } else if (p.role === 'OH') {
+        p.displayPos = isFrontRow ? 4 : 6;
+      } else if (p.role === 'MB') {
+        p.displayPos = isFrontRow ? 3 : 5;
+      } else if (p.role === 'OPP' || p.role === 'S') {
+        if (p.role === 'OPP' && receivingOHAtP2 && receivingOppAtP4 && currentPos === 4) {
+          p.displayPos = 4;
+        } else {
+          p.displayPos = isFrontRow ? 2 : 1;
+        }
+      }
+
+      p.position = getPositionCoordsBySide(p.displayPos, courtSide, false, setterPos);
+    });
+
+    if (activeLibero && !activeLibero.onBench) {
+      activeLibero.displayPos = 5;
+      activeLibero.position = getPositionCoordsBySide(5, courtSide, false, setterPos);
     }
   }
 }
 
-function updateAllTeamRolesAndSwaps() {
-  calculateRolesAndSwaps('A');
-  calculateRolesAndSwaps('B');
-}
+function updateAllTeamRolesAndSwaps() {}
 
-function rotateTeam(side) {
+function rotateTeam(side, direction = 'forward') {
   const sidePlayers = players.filter(p => p.side === side && p.posNum !== undefined && p.posNum !== null && !p.isLibero);
   sidePlayers.forEach(p => {
-    p.posNum = getNextPosition(p.posNum);
+    p.posNum = direction === 'backward' ? getPreviousPosition(p.posNum) : getNextPosition(p.posNum);
     delete p.manualPos;
   });
   updateAllTeamRolesAndSwaps();
   updateDropdownsFromPositions(side);
+  drawCourt();
 }
 
 function getSetterPosition(side) {
@@ -876,23 +1736,21 @@ function getSetterPosition(side) {
 }
 
 function saveMatchDataManual() {
-  const rawGuestName = document.getElementById('guestTeamInput').value.trim();
+  const currentOpponent = competitionTeams.find(t => t.id === selectedOpponentId);
+  const rawGuestName = currentOpponent ? currentOpponent.name : 'Gastteam';
   const guestTeamName = rawGuestName !== '' ? rawGuestName : 'Gastteam';
 
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  const dateStr = `${year}-${month}-${day}`;
-
+  const dateStr = today.toISOString().split('T')[0];
   const sanitizedGuestName = guestTeamName.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const filename = `${sanitizedGuestName}_${dateStr}.json`;
+  const filename = `VolleyScout_${sanitizedGuestName}_${dateStr}.json`;
 
   const matchData = {
     guestTeam: rawGuestName,
     savedAt: today.toISOString(),
     sets: { A: setsA, B: setsB },
     points: { A: pointsA, B: pointsB },
+    currentRallyId: currentRallyId,
     actions: actions,
     players: players,
     scoreHistory: scoreHistory
@@ -907,7 +1765,6 @@ function saveMatchDataManual() {
 
   document.body.appendChild(link);
   link.click();
-
   document.body.removeChild(link);
   URL.revokeObjectURL(link.href);
 }
@@ -1011,6 +1868,8 @@ function executeSubstitution() {
     side: side,
     playerOut: playerOut.number,
     score: currentScoreStr,
+    set: setsA + setsB + 1,
+    rallyId: currentRallyId,
     time: new Date().toISOString()
   });
 
@@ -1025,23 +1884,23 @@ function executeSubstitution() {
 function getActionColor(quality) {
   switch (quality) {
     case '++':
-      return '#28a745'; // Green
+      return '#28a745';
     case '+':
-      return '#ffc107'; // Yellow
+      return '#ffc107';
     case '0':
-      return '#fd7e14'; // Orange
+      return '#fd7e14';
     case '-':
-      return '#dc3545'; // Red
+      return '#dc3545';
     default:
-      return '#ffffff'; // Fallback color (White)
+      return '#ffffff';
   }
 }
-
 
 function toggleFirstServer() {
   if (pointsA === 0 && pointsB === 0 && setsA === 0 && setsB === 0) {
     servingSide = (servingSide === 'A') ? 'B' : 'A';
     lastPointWinner = null;
+    receptionCompleted = false;
     updateFirstServeUI();
     updateAllTeamRolesAndSwaps();
     drawCourt();
@@ -1071,6 +1930,7 @@ function toggleHomeTeam() {
   localStorage.setItem('selectedHomeTeam', homeTeamSide);
   updateHomeTeamUI();
   saveSavedRoster();
+  handleOpponentChange();
 }
 
 function updateHomeTeamUI() {
@@ -1116,6 +1976,7 @@ function saveSavedRoster() {
 function changePoints(side, delta) {
   if (isGameOver) return;
 
+  receptionCompleted = false;
   firstAttackInRallyOccurred = false;
   currentRallyEnded = true;
 
@@ -1124,7 +1985,7 @@ function changePoints(side, delta) {
     const previousWinner = lastPointWinner !== null ? lastPointWinner : servingSide;
 
     if (previousWinner !== side) {
-      rotateTeam(side);
+      rotateTeam(side, 'forward');
     }
 
     lastPointWinner = side;
@@ -1141,6 +2002,8 @@ function changePoints(side, delta) {
       set: setsA + setsB + 1,
       setterPos: currentSetterPos
     });
+
+    currentRallyId++;
   } else {
     if (side === 'A') pointsA = Math.max(0, pointsA - 1);
     else if (side === 'B') pointsB = Math.max(0, pointsB - 1);
@@ -1151,13 +2014,31 @@ function changePoints(side, delta) {
   }
 
   if (pointsA >= 25 && pointsA - pointsB >= 2) {
-    setsA++; pointsA = 0; pointsB = 0; lastPointWinner = null;
-    if (setsA === 3) { isGameOver = true; showEndGameStats(); }
-    else switchSides();
+    setsA++;
+    const setCompleted = setsA + setsB;
+    exportSetToExcel(setCompleted);
+    pointsA = 0; pointsB = 0; lastPointWinner = null;
+    if (setsA === 3) { 
+      isGameOver = true; 
+      downloadExcelWorkbook();
+      showEndGameStats(); 
+    } else { 
+      switchSides(); 
+      openSetStartModal();
+    }
   } else if (pointsB >= 25 && pointsB - pointsA >= 2) {
-    setsB++; pointsA = 0; pointsB = 0; lastPointWinner = null;
-    if (setsB === 3) { isGameOver = true; showEndGameStats(); }
-    else switchSides();
+    setsB++;
+    const setCompleted = setsA + setsB;
+    exportSetToExcel(setCompleted);
+    pointsA = 0; pointsB = 0; lastPointWinner = null;
+    if (setsB === 3) { 
+      isGameOver = true; 
+      downloadExcelWorkbook();
+      showEndGameStats(); 
+    } else { 
+      switchSides(); 
+      openSetStartModal();
+    }
   }
 
   updateScoreboard();
@@ -1172,7 +2053,7 @@ function updateScoreboard() {
 }
 
 function checkAndAutoScore(act) {
-  if ((act.mode === 'attack' || act.mode === 'counterattack' || act.mode === 'serve') && act.score === '++') {
+  if ((act.mode === 'attack' || act.mode === 'counterattack' || act.mode === 'serve' || act.mode === 'killblock') && act.score === '++') {
     if (act.side) {
       changePoints(act.side, 1);
       act.autoScored = act.side;
@@ -1210,48 +2091,50 @@ function populatePlayers(){
 
 function filterPlayerAttacks(val) {
   selectedPlayerFilter = val || null;
+  if (playerSel.value !== (val || "")) {
+    playerSel.value = val || "";
+  }
   drawCourt();
   renderStats();
 }
 
 function updateDropdownsFromPositions(side) {
   const sidePlayers = players.filter(p => p.side === side);
-  const options = '<option value="">--</option>' + sidePlayers.map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
   
   document.querySelectorAll(`.posSel${side}`).forEach(sel => {
-    const pos = sel.dataset.pos;
-    
-    if (pos === 'L') {
-      const libOptions = '<option value="">-- Geen --</option>' + sidePlayers.filter(p => p.isLibero).map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
-      sel.innerHTML = libOptions;
-      
-      let currentLib = activeLiberoNumber[side];
-      if (!currentLib) {
-        const firstLib = sidePlayers.find(p => p.isLibero);
-        if (firstLib) currentLib = firstLib.number;
+    const type = sel.dataset.type;
+    const previousValue = sel.value;
+    if (type === 'S') {
+      const preferred = sidePlayers.filter(p => p.isSetter || p.role === 'S');
+      const others = sidePlayers.filter(p => !(p.isSetter || p.role === 'S'));
+      const ordered = [...preferred, ...others];
+      sel.innerHTML = '<option value="">-- Kies S --</option>' + ordered.map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
+      if (previousValue && sidePlayers.some(p => p.number === previousValue)) {
+        sel.value = previousValue;
+      } else {
+        const currentSetter = sidePlayers.find(p => (p.isSetter || p.role === 'S') && p.posNum !== null);
+        if (currentSetter) sel.value = currentSetter.number;
       }
-      sel.value = currentLib || "";
-      return;
+    } else if (type === 'L') {
+      const preferred = sidePlayers.filter(p => p.isLibero || p.role === 'L');
+      const others = sidePlayers.filter(p => !(p.isLibero || p.role === 'L'));
+      const ordered = [...preferred, ...others];
+      sel.innerHTML = '<option value="">-- Geen --</option>' + ordered.map(p => `<option value="${p.number}">#${p.number} — ${p.name}</option>`).join('');
+      if (previousValue && sidePlayers.some(p => p.number === previousValue)) {
+        sel.value = previousValue;
+      } else if (activeLiberoNumber[side]) {
+        sel.value = activeLiberoNumber[side];
+      }
     }
-
-    sel.innerHTML = options;
-    let matchingPlayer = null;
-
-    if (pos === 'S') matchingPlayer = sidePlayers.find(p => p.isSetter);
-    else matchingPlayer = sidePlayers.find(p => p.posNum === Number(pos));
-
-    sel.value = matchingPlayer ? matchingPlayer.number : "";
   });
 }
 
 function addPlayerToSide(side) {
   const nrInput = document.getElementById(side === 'A' ? 'nrA' : 'nrB');
   const nameInput = document.getElementById(side === 'A' ? 'nameA' : 'nameB');
-  const roleInput = document.getElementById(side === 'A' ? 'roleA' : 'roleB');
 
   const nr = nrInput.value.trim();
   let nm = nameInput.value.trim();
-  const selectedRole = roleInput.value;
 
   if (!nr) return alert("Rugnummer is verplicht.");
 
@@ -1263,33 +2146,29 @@ function addPlayerToSide(side) {
     nm = `Speler #${nr}`;
   }
 
-  const isLib = (selectedRole === 'L');
-  const isSet = (selectedRole === 'S');
-  const assignedRole = (selectedRole && !isLib && !isSet) ? selectedRole : (isSet ? 'S' : (isLib ? 'L' : null));
-
   players.push({ 
     number: nr, 
     name: nm, 
     side: side, 
     position: null, 
     posNum: null, 
-    isLibero: isLib, 
-    isSetter: isSet, 
-    role: assignedRole, 
+    isLibero: false, 
+    isSetter: false, 
+    role: null, 
     onBench: false 
   });
 
-  if (isLib && !activeLiberoNumber[side]) {
-    activeLiberoNumber[side] = nr;
-  }
-
   nrInput.value = ""; 
   nameInput.value = "";
-  roleInput.value = "";
   nrInput.focus();
 
-  if (side === homeTeamSide) saveSavedRoster();
+  if (side === homeTeamSide) {
+    saveSavedRoster();
+  } else {
+    syncOpponentRosterFromCurrentMatch();
+  }
   populatePlayers();
+  initExcelWorkbook();
 }
 
 function renderSideLists() {
@@ -1307,7 +2186,7 @@ function renderSideLists() {
       return `
         <div class="roster-item" draggable="true" ondragstart="handleDragStart(event, ${globalIdx})">
           <span><strong>#${p.number}</strong> ${p.name} ${badges}</span>
-          <button onclick="removeTeamPlayer(${globalIdx})" style="padding:1px 5px; border:none; background:#fee2e2; color:#dc2626; border-radius:4px; cursor:pointer;">×` + `</button>
+          <button onclick="removeTeamPlayer(${globalIdx})" style="padding:1px 5px; border:none; background:#fee2e2; color:#dc2626; border-radius:4px; cursor:pointer;">×</button>
         </div>`;
     }).join('') || '<div style="color:#94a3b8; font-size:11px; text-align:center;">Geen spelers</div>';
   });
@@ -1322,8 +2201,13 @@ function removeTeamPlayer(i) {
     activeLiberoNumber[removedPlayer.side] = remainingLib ? remainingLib.number : null;
   }
 
-  if (removedPlayer && removedPlayer.side === homeTeamSide) saveSavedRoster();
+  if (removedPlayer && removedPlayer.side === homeTeamSide) {
+    saveSavedRoster();
+  } else {
+    syncOpponentRosterFromCurrentMatch();
+  }
   populatePlayers();
+  initExcelWorkbook();
 }
 
 function handleDragStart(e, globalIdx) {
@@ -1386,12 +2270,12 @@ canvas.addEventListener('drop', e => {
 
 function assignPlayerToPosition(player, posNum, side) {
   if (player.posNum === null || player.posNum === undefined) {
-    const existingPlayer = players.find(p => p.side === side && p.posNum === posNum);
-    if (existingPlayer) existingPlayer.posNum = null;
+    const existingPlayer = players.find(p => p.side === side && (p.manualPos || p.posNum) === posNum);
+    if (existingPlayer) { existingPlayer.posNum = null; delete existingPlayer.manualPos; }
     player.posNum = posNum;
   } else {
     player.manualPos = posNum;
-    const existingPlayer = players.find(p => p.side === side && p !== player && (p.displayPos === posNum || p.manualPos === posNum));
+    const existingPlayer = players.find(p => p.side === side && p !== player && (p.manualPos || p.posNum) === posNum);
     if (existingPlayer) {
       existingPlayer.manualPos = player.displayPos || player.posNum;
     }
@@ -1403,41 +2287,25 @@ function assignPlayerToPosition(player, posNum, side) {
   drawCourt();
 }
 
-function syncSelectToPositions(side) {
-  players.filter(p => p.side === side).forEach(p => { 
-    p.posNum = null;
-    delete p.manualPos;
-    p.isSetter = (p.role === 'S');
-    p.onBench = false;
-  });
+function applyPositions(side) {
+  let setterNr = null;
+  let liberoNr = null;
 
   document.querySelectorAll(`.posSel${side}`).forEach(sel => {
-    const rawPos = sel.dataset.pos;
-    const selectedNr = sel.value;
-    if (!selectedNr) return;
-
-    const player = players.find(p => p.number === selectedNr && p.side === side);
-    if (!player) return;
-
-    if (rawPos === 'L') {
-      activeLiberoNumber[side] = selectedNr;
-    } else if (rawPos === 'S') {
-      player.isSetter = true;
-    } else {
-      player.posNum = Number(rawPos);
-    }
+    const type = sel.dataset.type;
+    if (type === 'S') setterNr = sel.value;
+    if (type === 'L') liberoNr = sel.value;
   });
 
-  updateAllTeamRolesAndSwaps();
+  assignSetterLibero(side, setterNr, liberoNr);
   populatePlayers();
   drawCourt();
 }
 
-function applyPositions(side) {
-  syncSelectToPositions(side);
-}
-
 function drawCourt(){
+  calculateRolesAndSwaps('A');
+  calculateRolesAndSwaps('B');
+
   const w=canvas.width, h=canvas.height;
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle='#0184c7'; ctx.fillRect(0,0,w,h);
@@ -1461,11 +2329,12 @@ function drawCourt(){
   ['left', 'right'].forEach(courtSide => {
     const currentSide = (courtSide === 'left') ? teamOnLeft : (teamOnLeft === 'A' ? 'B' : 'A');
     const isReceiving = (servingSide !== currentSide);
+    const isInReceptionPhase = isReceiving && !receptionCompleted;
     const setterPlayer = players.find(p => p.side === currentSide && (p.isSetter || p.role === 'S'));
     const setterPos = setterPlayer ? setterPlayer.posNum : null;
 
     for (let posNum = 1; posNum <= 6; posNum++) {
-      const coords = getPositionCoordsBySide(posNum, courtSide, isReceiving, setterPos);
+      const coords = getPositionCoordsBySide(posNum, courtSide, isInReceptionPhase, setterPos);
       const px = coords.xPct * w;
       const py = coords.yPct * h;
 
@@ -1489,6 +2358,8 @@ function drawCourt(){
     }
   });
 
+  const currentSetNum = setsA + setsB + 1;
+
   for(const a of actions){
     if (a.mode === 'substitution') continue;
 
@@ -1498,53 +2369,63 @@ function drawCourt(){
       continue;
     }
 
-    if (!selectedPlayerFilter && currentRallyEnded && !showHistoricalLines) {
-      continue;
+    if (!selectedPlayerFilter && !showHistoricalLines) {
+      const isCurrentRallyAction = (a.rallyId === currentRallyId && (a.set === undefined || a.set === currentSetNum));
+      if (!isCurrentRallyAction) {
+        continue;
+      }
     }
     
-    if(a.mode === 'attack' || a.mode === 'counterattack') {
+    if(a.mode === 'attack' || a.mode === 'counterattack' || a.mode === 'serve') {
       ctx.strokeStyle = getActionColor(a.score);
       ctx.fillStyle = ctx.strokeStyle;
-      ctx.lineWidth = 4; 
+      ctx.lineWidth = selectedPlayerFilter ? 3.5 : 4; 
       
       const startX = a.x1 !== undefined ? a.x1 : a.x;
       const startY = a.y1 !== undefined ? a.y1 : a.y;
+      const endX = a.x2 !== undefined ? a.x2 : a.x;
+      const endY = a.y2 !== undefined ? a.y2 : a.y;
 
-      ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(a.x2, a.y2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(endX, endY); ctx.stroke();
       
-      const ang = Math.atan2(a.y2 - startY, a.x2 - startX);
-      ctx.beginPath(); ctx.moveTo(a.x2, a.y2);
-      ctx.lineTo(a.x2 - 10 * Math.cos(ang - .5), a.y2 - 10 * Math.sin(ang - .5));
-      ctx.lineTo(a.x2 - 10 * Math.cos(ang + .5), a.y2 - 10 * Math.sin(ang + .5));
+      const ang = Math.atan2(endY - startY, endX - startX);
+      ctx.beginPath(); ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - 10 * Math.cos(ang - .5), endY - 10 * Math.sin(ang - .5));
+      ctx.lineTo(endX - 10 * Math.cos(ang + .5), endY - 10 * Math.sin(ang + .5));
       ctx.closePath(); ctx.fill();
 
       ctx.beginPath(); ctx.arc(startX, startY, 4, 0, Math.PI * 2); ctx.fill();
-    } else if (a.mode === 'serve' && a.x1 !== undefined && a.x2 !== undefined) {
-      ctx.strokeStyle = 'rgba(22, 163, 74, 0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(a.x1, a.y1); ctx.stroke();
-      ctx.setLineDash([]);
-
-      ctx.strokeStyle = '#16a34a';
-      ctx.fillStyle = '#16a34a';
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(a.x1, a.y1); ctx.lineTo(a.x2, a.y2); ctx.stroke();
-
-      const ang = Math.atan2(a.y2 - a.y1, a.x2 - a.x1);
-      ctx.beginPath(); ctx.moveTo(a.x2, a.y2);
-      ctx.lineTo(a.x2 - 10 * Math.cos(ang - .5), a.y2 - 10 * Math.sin(ang - .5));
-      ctx.lineTo(a.x2 - 10 * Math.cos(ang + .5), a.y2 - 10 * Math.sin(ang + .5));
-      ctx.closePath(); ctx.fill();
-
-      ctx.beginPath(); ctx.arc(a.x1, a.y1, 4, 0, Math.PI * 2); ctx.fill();
     } else {
-      ctx.fillStyle = a.mode === 'serve' ? '#16a34a' : '#dc2626';
+      ctx.fillStyle = getActionColor(a.score);
       ctx.beginPath(); ctx.arc(a.x,a.y,7,0,Math.PI*2); ctx.fill();
       ctx.fillStyle='#fff'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(a.player,a.x,a.y);
       ctx.textAlign='left'; ctx.textBaseline='alphabetic';
     }
+  }
+
+  // Draw active live line tracking cursor
+  if (isDrawingLine && currentLineStart && currentLineEnd) {
+    ctx.strokeStyle = '#38bdf8';
+    ctx.fillStyle = '#38bdf8';
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(currentLineStart.x, currentLineStart.y);
+    ctx.lineTo(currentLineEnd.x, currentLineEnd.y);
+    ctx.stroke();
+
+    const ang = Math.atan2(currentLineEnd.y - currentLineStart.y, currentLineEnd.x - currentLineStart.x);
+    ctx.beginPath();
+    ctx.moveTo(currentLineEnd.x, currentLineEnd.y);
+    ctx.lineTo(currentLineEnd.x - 10 * Math.cos(ang - .5), currentLineEnd.y - 10 * Math.sin(ang - .5));
+    ctx.lineTo(currentLineEnd.x - 10 * Math.cos(ang + .5), currentLineEnd.y - 10 * Math.sin(ang + .5));
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(currentLineStart.x, currentLineStart.y, 4, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   for (const p of players) {
@@ -1595,7 +2476,7 @@ function drawCourt(){
 
     if (badges.length > 0) {
       ctx.font = "bold 10px Arial";
-      ctx.fillStyle = p.isSetter ? "#059669" : (p.isLibero ? "#0284c7" : "#475569");
+      ctx.fillStyle = p.isSetter ? "#059669" : (p.isLibero ? "#0284c7" : "#ffffff");
       ctx.fillText(badges.join(' '), px, py - 18);
     }
 
@@ -1605,7 +2486,7 @@ function drawCourt(){
     }
 
     ctx.font = "bold 10px Arial";
-    ctx.fillStyle = "#17202a";
+    ctx.fillStyle = "#ffffff";
     ctx.fillText(p.name, px, py + 22);
   }
 }
@@ -1631,39 +2512,17 @@ function findClosestPlayer(x, y) {
   return bestDist <= 25 ? best : null;
 }
 
-canvas.addEventListener('click', e => {
+canvas.addEventListener('mousedown', e => {
   if (isGameOver) return;
   const p = pos(e);
 
-  if (attackTargetingStep === 1 && pendingAction) {
+  if (pendingAction && (pendingAction.mode === 'attack' || pendingAction.mode === 'serve')) {
+    isDrawingLine = true;
+    currentLineStart = { x: p.x, y: p.y };
+    currentLineEnd = { x: p.x, y: p.y };
     pendingAction.x1 = p.x;
     pendingAction.y1 = p.y;
-    attackTargetingStep = 2;
-    document.getElementById('hint').textContent = `Aanval voor #${pendingAction.player}: Klik nu op het EINDPUNT van de aanval (waar de bal landt op de helft van de tegenstander).`;
-    return;
-  }
-
-  if (attackTargetingStep === 2 && pendingAction) {
-    pendingAction.x2 = p.x;
-    pendingAction.y2 = p.y;
-    attackTargetingStep = 0;
-    showScoreSelectionStep(p.screenX, p.screenY);
-    return;
-  }
-
-  if (serveTargetingStep === 1 && pendingAction) {
-    pendingAction.x1 = p.x;
-    pendingAction.y1 = p.y;
-    serveTargetingStep = 2;
-    document.getElementById('hint').textContent = `Opslag voor #${pendingAction.player}: Klik nu op het EINDPUNT (waar de bal landt op de helft van de tegenstander).`;
-    return;
-  }
-
-  if (serveTargetingStep === 2 && pendingAction) {
-    pendingAction.x2 = p.x;
-    pendingAction.y2 = p.y;
-    serveTargetingStep = 0;
-    showScoreSelectionStep(p.screenX, p.screenY);
+    drawCourt();
     return;
   }
 
@@ -1674,6 +2533,27 @@ canvas.addEventListener('click', e => {
   drawCourt();
 
   showSkillSelectionStep(p.screenX, p.screenY);
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (isDrawingLine) {
+    const p = pos(e);
+    currentLineEnd = { x: p.x, y: p.y };
+    drawCourt();
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (isDrawingLine && pendingAction) {
+    const p = pos(e);
+    pendingAction.x2 = p.x;
+    pendingAction.y2 = p.y;
+    isDrawingLine = false;
+    currentLineStart = null;
+    currentLineEnd = null;
+    
+    showScoreSelectionStep(p.screenX, p.screenY);
+  }
 });
 
 function showSkillSelectionStep(screenX, screenY) {
@@ -1690,6 +2570,7 @@ function showSkillSelectionStep(screenX, screenY) {
     <button onclick="selectSkill('reception')">Receptie</button>
     <button onclick="selectSkill('attack')">Aanval</button>
     <button onclick="selectSkill('serve')">Opslag</button>
+    <button onclick="selectSkill('killblock')" style="background:#059669;">Kill Block</button>
     <button class="cancel" onclick="cancelPendingAction()">✕</button>
   `;
 
@@ -1700,16 +2581,18 @@ function showSkillSelectionStep(screenX, screenY) {
 
 function selectSkill(mode) {
   if (!pendingAction) return;
+
+  if (mode == 'killblock') {
+    pendingAction.mode = 'killblock';
+    submitPendingScore('++');
+    return;
+  }
+
   pendingAction.mode = mode;
 
-  if (mode === 'attack') {
-    attackTargetingStep = 1;
+  if (mode === 'attack' || mode === 'serve') {
     scorePopup.style.display = 'none';
-    document.getElementById('hint').textContent = `Aanval voor #${pendingAction.player} (Team ${pendingAction.side}): Klik op het STARTPUNT van de aanval (waar de aanvaller de bal slaat).`;
-  } else if (mode === 'serve') {
-    serveTargetingStep = 1;
-    scorePopup.style.display = 'none';
-    document.getElementById('hint').textContent = `Opslag voor #${pendingAction.player} (Team ${pendingAction.side}): Klik op het STARTPUNT van de opslag (waar de speler de bal slaat).`;
+    document.getElementById('hint').textContent = `Slepen maar! Klik en sleep de muis van het startpunt naar het eindpunt op het veld.`;
   } else {
     showScoreSelectionStep(pendingAction.screenX, pendingAction.screenY);
   }
@@ -1738,7 +2621,50 @@ function submitPendingScore(scoreVal) {
   }
 
   let actualMode = pendingAction.mode;
-  if (pendingAction.mode === 'attack') {
+
+  if (pendingAction.mode === 'serve') {
+    receptionCompleted = true;
+    updateAllTeamRolesAndSwaps();
+  }
+
+  if (pendingAction.mode === 'reception') {
+    receptionCompleted = true;
+    updateAllTeamRolesAndSwaps();
+
+    let autoServeScore = '0';
+    if (scoreVal === '+' || scoreVal === '++') {
+      autoServeScore = '0';
+    } else if (scoreVal === '0') {
+      autoServeScore = '+';
+    } else if (scoreVal === '-') {
+      autoServeScore = '++';
+    }
+
+    const opposingSide = pendingAction.side === 'A' ? 'B' : 'A';
+    const serverPlayer = players.find(p=> p.side === opposingSide && p.posNum === 1);
+
+    if (serverPlayer) {
+      const serverX = serverPlayer.position ? serverPlayer.position.xPct * canvas.width : 0;
+      const serverY = serverPlayer.position ? serverPlayer.position.yPct * canvas.height : 0;
+
+      const autoServeAction = {
+        player: serverPlayer.number,
+        side: opposingSide,
+        mode: 'serve',
+        score: autoServeScore,
+        x: serverX,
+        y: serverY,
+        endX: pendingAction.x,
+        endY:pendingAction.y,
+        set: setsA + setsB + 1,
+        rallyId: currentRallyId,
+        time: new Date().toISOString()
+      }
+      actions.push(autoServeAction);
+      checkAndAutoScore(autoServeAction);
+    }
+
+  } else if (pendingAction.mode === 'attack') {
     if (!firstAttackInRallyOccurred) {
       actualMode = 'attack'; 
       firstAttackInRallyOccurred = true;
@@ -1751,32 +2677,126 @@ function submitPendingScore(scoreVal) {
     ...pendingAction,
     mode: actualMode,
     score: scoreVal,
+    set: setsA + setsB + 1,
+    rallyId: currentRallyId,
     time: new Date().toISOString()
   };
 
   actions.push(newAction);
-  checkAndAutoScore(newAction);
 
   cancelPendingAction();
-  drawCourt(); 
+  drawCourt();
+  
+  checkAndAutoScore(newAction);
   renderStats();
 }
 
 function cancelPendingAction() {
   pendingAction = null;
   activePlayer = null;
-  attackTargetingStep = 0;
-  serveTargetingStep = 0;
+  isDrawingLine = false;
+  currentLineStart = null;
+  currentLineEnd = null;
   scorePopup.style.display = 'none';
   document.getElementById('hint').textContent = "Klik op een speler om een actie (Receptie / Aanval / Opslag) toe te voegen.";
   drawCourt();
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      // Re-assign basic match states
+      if (data.sets) {
+        setsA = Number(data.sets.A) || 0;
+        setsB = Number(data.sets.B) || 0;
+      }
+      if (data.points) {
+        pointsA = Number(data.points.A) || 0;
+        pointsB = Number(data.points.B) || 0;
+      }
+      if (data.currentRallyId) {
+        currentRallyId = Number(data.currentRallyId) || 1;
+      }
+      if (data.scoreHistory) {
+        scoreHistory = data.scoreHistory;
+      }
+
+      // Re-assign players array with defaults for missing structural fields
+      if (Array.isArray(data.players)) {
+        players = data.players.map(p => ({
+          number: String(p.number),
+          name: p.name || `Speler #${p.number}`,
+          side: p.side || 'A',
+          position: p.position || null,
+          posNum: p.posNum !== undefined ? p.posNum : null,
+          isLibero: Boolean(p.isLibero),
+          isSetter: Boolean(p.isSetter),
+          role: p.role || null,
+          onBench: Boolean(p.onBench)
+        }));
+      }
+
+      // Re-assign actions array ensuring fallbacks for PDF vector coordinates
+      if (Array.isArray(data.actions)) {
+        actions = data.actions.map(a => {
+          const defaultX = Number(a.x) || 0;
+          const defaultY = Number(a.y) || 0;
+          return {
+            ...a,
+            set: a.set ? Number(a.set) : 1,
+            rallyId: a.rallyId || 1,
+            x: defaultX,
+            y: defaultY,
+            x1: a.x1 !== undefined ? Number(a.x1) : defaultX,
+            y1: a.y1 !== undefined ? Number(a.y1) : defaultY,
+            x2: a.x2 !== undefined ? Number(a.x2) : defaultX,
+            y2: a.y2 !== undefined ? Number(a.y2) : defaultY
+          };
+        });
+      }
+
+      // Update competition context if provided
+      if (data.guestTeam) {
+        const matchingTeam = competitionTeams.find(t => t.name === data.guestTeam);
+        if (matchingTeam) {
+          selectedOpponentId = matchingTeam.id;
+          const selector = document.getElementById('opponentSelect');
+          if (selector) selector.value = selectedOpponentId;
+        }
+      }
+
+      // Re-synchronize application components
+      updateScoreboard();
+      initExcelWorkbook();
+      populatePlayers();
+      updateAllTeamRolesAndSwaps();
+      drawCourt();
+      renderStats();
+
+      alert("JSON succesvol geïmporteerd!");
+    } catch (err) {
+      console.error("Fout bij importeren van JSON:", err);
+      alert("Het geselecteerde bestand kon niet verwerkt worden. Controleer het JSON format.");
+    }
+  };
+
+  reader.readAsText(file);
 }
 
 document.getElementById('undoBtn').onclick = () => { 
   cancelPendingAction();
   const lastAction = actions.pop(); 
   if (lastAction) {
-    if (lastAction.mode === 'attack') {
+    if (lastAction.mode === 'reception') {
+      receptionCompleted = false;
+      updateAllTeamRolesAndSwaps();
+    } else if (lastAction.mode === 'attack') {
       firstAttackInRallyOccurred = false;
     }
     
@@ -1810,16 +2830,19 @@ document.getElementById('undoBtn').onclick = () => {
 document.getElementById('clearBtn').onclick = () => {
   if(confirm(`Alle acties en scores wissen?`)){
     cancelPendingAction();
-    actions=[]; pointsA=0; pointsB=0; setsA=0; setsB=0; lastPointWinner=null; servingSide='A'; isGameOver=false;
+    actions=[]; pointsA=0; pointsB=0; setsA=0; setsB=0; currentRallyId=1; lastPointWinner=null; servingSide='A'; isGameOver=false;
     scoreHistory=[];
+    receptionCompleted = false;
     firstAttackInRallyOccurred = false;
     currentRallyEnded = false;
     selectedPlayerFilter = null;
     showHistoricalLines = false;
+    document.getElementById('showHistLines').checked = false;
     teamOnLeft = 'A';
     players = players.filter(p => p.side === homeTeamSide);
     players.forEach(p => { p.position = null; p.posNum = null; delete p.manualPos; p.onBench = false; });
     
+    initExcelWorkbook();
     populatePlayers();
     updateScoreboard(); 
     drawCourt(); 
@@ -1888,7 +2911,7 @@ function renderStats(){
     }
   }
   html += '</table>';
-  document.getElementById('stats').innerHTML = actions.length ? html : '<div style="color:#66737f;text-align:center;padding:8px;">Geen acties.</div>';
+  document.getElementById('stats').innerHTML = actions.length ? html : '<div style="color:#94a3b8;text-align:center;padding:8px;">Geen acties.</div>';
 }
 
 function showEndGameStats() {
@@ -1931,70 +2954,23 @@ function showEndGameStats() {
   const statsA = getTeamStats('A');
   const statsB = getTeamStats('B');
 
-  document.getElementById('teamStatsSummary').innerHTML = `
+  const summaryContainer = document.getElementById('teamStatsSummary');
+  summaryContainer.innerHTML = `
     <div class="team-stat-card">
-      <h4>Team A</h4>
-      <div class="stat-row"><span>1e Aanval ptn (eff):</span> <strong>${statsA.atkPts}/${statsA.atkTotal} (${statsA.atkEff})</strong></div>
-      <div class="stat-row"><span>Tegenaanval ptn (eff):</span> <strong>${statsA.cntPts}/${statsA.cntTotal} (${statsA.cntEff})</strong></div>
-      <div class="stat-row"><span>Goede Recepties:</span> <strong>${statsA.recGood} / ${statsA.recTotal} (${statsA.recEff})</strong></div>
-      <div class="stat-row"><span>Aces:</span> <strong>${statsA.srvAces} / ${statsA.srvTotal}</strong></div>
+      <h4 style="color:#2563eb;">Team A</h4>
+      <div class="stat-row"><span>Aanval Pts/Tot:</span><strong>${statsA.atkPts}/${statsA.atkTotal} (${statsA.atkEff})</strong></div>
+      <div class="stat-row"><span>Tegenaanval Pts/Tot:</span><strong>${statsA.cntPts}/${statsA.cntTotal} (${statsA.cntEff})</strong></div>
+      <div class="stat-row"><span>Pass Efficientie:</span><strong>${statsA.recEff}</strong></div>
+      <div class="stat-row"><span>Service Aces:</span><strong>${statsA.srvAces}</strong></div>
     </div>
     <div class="team-stat-card">
-      <h4>Team B</h4>
-      <div class="stat-row"><span>1e Aanval ptn (eff):</span> <strong>${statsB.atkPts}/${statsB.atkTotal} (${statsB.atkEff})</strong></div>
-      <div class="stat-row"><span>Tegenaanval ptn (eff):</span> <strong>${statsB.cntPts}/${statsB.cntTotal} (${statsB.cntEff})</strong></div>
-      <div class="stat-row"><span>Goede Recepties:</span> <strong>${statsB.recGood} / ${statsB.recTotal} (${statsB.recEff})</strong></div>
-      <div class="stat-row"><span>Aces:</span> <strong>${statsB.srvAces} / ${statsB.srvTotal}</strong></div>
+      <h4 style="color:#dc2626;">Team B</h4>
+      <div class="stat-row"><span>Aanval Pts/Tot:</span><strong>${statsB.atkPts}/${statsB.atkTotal} (${statsB.atkEff})</strong></div>
+      <div class="stat-row"><span>Tegenaanval Pts/Tot:</span><strong>${statsB.cntPts}/${statsB.cntTotal} (${statsB.cntEff})</strong></div>
+      <div class="stat-row"><span>Pass Efficientie:</span><strong>${statsB.recEff}</strong></div>
+      <div class="stat-row"><span>Service Aces:</span><strong>${statsB.srvAces}</strong></div>
     </div>
   `;
-
-  const tbody = document.querySelector('#playerStatsTable tbody');
-  tbody.innerHTML = '';
-
-  players.forEach(p => {
-    const pActions = actions.filter(a => a.player === p.number && a.side === p.side && a.mode !== 'substitution');
-    if (!pActions.length) return;
-
-    let atkPts = 0, atkTotal = 0, atkErr = 0;
-    let cntPts = 0, cntTotal = 0, cntErr = 0;
-    let recGood = 0, recTotal = 0;
-    let srvAces = 0, srvTotal = 0;
-
-    pActions.forEach(a => {
-      if (a.mode === 'attack') {
-        atkTotal++;
-        if (a.score === '++') atkPts++;
-        if (a.score === '-') atkErr++;
-      } else if (a.mode === 'counterattack') {
-        cntTotal++;
-        if (a.score === '++') cntPts++;
-        if (a.score === '-') cntErr++;
-      } else if (a.mode === 'reception') {
-        recTotal++;
-        if (a.score === '++' || a.score === '+') recGood++;
-      } else if (a.mode === 'serve') {
-        srvTotal++;
-        if (a.score === '++') srvAces++;
-      }
-    });
-
-    const totAtk = atkTotal + cntTotal;
-    const totAtkPts = atkPts + cntPts;
-    const totAtkErr = atkErr + cntErr;
-    const combinedAtkEff = totAtk ? (((totAtkPts - totAtkErr) / totAtk) * 100).toFixed(0) + '%' : '-';
-    const recEff = recTotal ? ((recGood / recTotal) * 100).toFixed(0) + '%' : '-';
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><strong>#${p.number}</strong> ${p.name} (${p.side})</td>
-      <td>1e: ${atkPts}/${atkTotal} | Teg: ${cntPts}/${cntTotal}</td>
-      <td>${combinedAtkEff}</td>
-      <td>${recGood} / ${recTotal}</td>
-      <td>${recEff}</td>
-      <td>${srvAces} / ${srvTotal}</td>
-    `;
-    tbody.appendChild(tr);
-  });
 
   document.getElementById('endGameModal').style.display = 'flex';
 }
@@ -2003,65 +2979,16 @@ function closeModal() {
   document.getElementById('endGameModal').style.display = 'none';
 }
 
-function exportReportJSON() {
-  saveMatchDataManual();
-}
-
-loadSavedHomeTeam();
-updateHomeTeamUI();
-populatePlayers();
-updateScoreboard();
-updateFirstServeUI();
-
-
-function importMatchData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = function(e) {
-    try {
-      const matchData = JSON.parse(e.target.result);
-
-      // 1. Restore match scores and settings
-      setsA = matchData.sets?.A || 0;
-      setsB = matchData.sets?.B || 0;
-      pointsA = matchData.points?.A || 0;
-      pointsB = matchData.points?.B || 0;
-
-      if (matchData.guestTeam !== undefined) {
-        document.getElementById('guestTeamInput').value = matchData.guestTeam;
-      }
-
-      // 2. Restore players, actions, and history
-      players = matchData.players || [];
-      actions = matchData.actions || [];
-      scoreHistory = matchData.scoreHistory || [];
-
-      // 3. Reset UI states
-      isGameOver = (setsA >= 3 || setsB >= 3);
-      cancelPendingAction();
-      
-      // 4. Update the visual layout
-      updateScoreboard();
-      updateAllTeamRolesAndSwaps();
-      populatePlayers();
-      drawCourt();
-      renderStats();
-
-      alert("Wedstrijdgegevens succesvol ingeladen!");
-    } catch (err) {
-      console.error(err);
-      alert("Fout bij het inladen van het JSON-bestand. Controleer of het bestand geldig is.");
-    }
-
-    // Clear file input value to allow re-uploading the same file if needed
-    event.target.value = '';
-  };
-
-  reader.readAsText(file);
-}
+window.onload = () => {
+  loadSavedHomeTeam();
+  initCompetitionUI();
+  handleOpponentChange();
+  initExcelWorkbook();
+  updateHomeTeamUI();
+  updateFirstServeUI();
+  drawCourt();
+  renderStats();
+};
 </script>
 </body>
 </html>
